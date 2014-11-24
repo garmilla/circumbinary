@@ -149,6 +149,32 @@ The binary torque $\Lambda$ vanishes to 0 at the inner edge. If we further assum
 
 \section{Numerical Method}
 
-We will use FiPy to solve Eq.\,\ref{eq:diskev}. The package supports partial differential equations with a nonlinear diffusion term and an advection term.
+We will use FiPy to solve Eq.\,\ref{eq:diskev}. FiPy is a finite volume package for Python, it's typically used to
+solve PDEs that arise from conservation laws in physical sciences and engineering.
 
+Since FiPy only works with conservation equations, we have to cast our evolution equation as a conservation law.
+By inspecting equation \ref{eq:diskev} we can see that it can be written as a conservation law with a convection 
+term as follows
+\begin{equation} \label{eq:conservation}
+\frac{\partial \Sigma}{\partial t} = -\frac{1}{r} \frac{\partial}{\partial r} \left( r \Sigma v_{r}\right)=-\nabla\cdot (\Sigma v_r \bold{e}_{r}),
+\end{equation}
+where
+\begin{equation} \label{eq:vr}
+v_r = -\frac{3}{r^{1/2}\Sigma} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right) + \frac{2 \Lambda r^{1/2}}{(G M)^{1/2}}.
+\end{equation}
+This way we have a conservation law. The conserved quantity is $\Sigma$, and the flux is $\Sigma v_r \bold{e}_r$.
+
+The finite volume techinque consists on dividing the volume into small cells where the variable of interest ($\Sigma$) has a constant value,
+and the value of the flux ($\Sigma v_r$) has a constant value at the cells' faces. The geometry of the cells doesn't have to be cartesian, in
+our case we'll use cells shaped like annuli to take advantage of the cylindrical symmetry.
+The discretization is obtained by integrating equation \ref{eq:conservation} over a volume cell and using the divergence theorem on the
+right hand side to get
+\begin{equation} \label{eq:discretization}
+\frac{\Sigma_c(t+\Delta t) V_C - \Sigma_c(t) V_C}{\Delta t} =
+-\sum_{f} \Sigma_{f}(t) v_{rf}(t) A_{f} (\bold{e}_r \cdot \bold{e}_{f}),
+\end{equation}
+where the subscript $c$ means that quantity is evaluated at the cell center and $f$ means the quantity is evaluated at one of the faces,
+$V_C$ is the cell's volume, $A_f$ is the area of face $f$, and $\bold{e}_{f}$ is the normal vector of the face $f$ pointing outwards.
+In our case we only have two faces per cell because the grid is one 
+dimensional.
 \end{document}
