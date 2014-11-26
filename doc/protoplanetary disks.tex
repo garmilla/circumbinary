@@ -48,13 +48,7 @@ Extrapolated to all optical depths,
 \sigma T_m^4 = \left(1+\frac{1}{\tau}\right) F_{tid} + \left(\frac{3\tau}{4} + \frac{1}{\tau}\right) F_{v} + F_{irr}\,,
 \end{equation}
 
-where $T_m$ the disk midplane temperature. The optical depth is defined as $\tau =\frac{1}{2} \kappa \Sigma$, where $\kappa$ is the opacity. We will assume a power-law for the opacity,
-
-\begin{equation}
-\kappa = \kappa_o T^\beta\,.
-\end{equation} 
-
-We will use the prescription in Bell \& Lin 2004 for opacity.
+where $T_m$ the disk midplane temperature. The optical depth is defined as $\tau =\frac{1}{2} \kappa \Sigma$, where $\kappa$ is the opacity.
 
 The tidal heating term per surface is
 
@@ -107,6 +101,26 @@ where the sound speed is $c_s = \sqrt{\frac{P}{\rho}}$ and the viscosity is for 
 v = 	\alpha \frac{k_B T}{\mu \Omega}\,.
 \end{equation}
 
+\section{Opacity}
+
+Following the prescription in Bell \& Lin 2004, we will assume a power-law for the opacity,
+
+\begin{equation}
+\kappa = \kappa_o T^\beta\,.
+\end{equation} 
+
+We use a piecewise continuous opacity  for different temperatures,
+
+$$\kappa =
+\begin{cases}
+2\times 10^{-4} T^2, & \textrm{T} \leq 166.81\, \textrm{K} \\
+2\times 10^{16} T^{-7}, & 166.81\, \textrm{K} <  \textrm{T} < 202.677\, \textrm{K} \\
+0.1\times T^{1/2}, & \textrm{T} > 202.677\, \textrm{K}
+\end{cases}
+$$
+
+The last expression for opacity holds up to greater than $2000$\,K, higher than disk temperatures we will consider.
+
 \section{Disk Evolution}
 
 We can now evaluate the disk evolution equation by expressing viscosity as a function of surface density $\Sigma$ and radius $r$.
@@ -145,7 +159,7 @@ We can derive a more general inner boundary condition with the hypothesis $\part
 
 The binary torque $\Lambda$ vanishes to 0 at the inner edge. If we further assume that the accretion rate $\dot{M}$ is 0, we get that $\Sigma$ must be a constant, which we can fix to 0 and return our inner boundary condition above.
 
-\textbf{I will add initial surface density and temperature profiles soon. For now, we are using a delta function for the surface density.}
+\textbf{I will add initial surface density soon. For now, we are using a delta function for the surface density.}
 
 \section{Numerical Method}
 
