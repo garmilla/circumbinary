@@ -1,9 +1,30 @@
 import argparse
 import numpy as np
+from scipy.optimize import root
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, UpwindConvectionTerm
 
 from constants import *
+
+# We can get the exact solution for T by finding the root of this function
+# I doesn't work!
+def fun(T, self, delta = 1.0e-20):
+    r = self.mesh.cellCenters.value[0]*r0
+    low = np.where(T <= 166.81)
+    mid = np.where(np.logical_and(T > 166.81, T < 202.677))
+    high = np.where(T >= 202.677)
+    self.kappa[low] = 2.0e-4*np.square(T[low])
+    self.kappa[mid] = 2.0e16*np.power(T[mid], -7)
+    self.kappa[high] = 0.1*np.sqrt(T[high])
+    tau = 0.5*self.kappa*self.Sigma
+    nu = alpha*k/mu/self.Omega*T
+    Fnu = 9.0/8*self.Omega**2*nu*self.Sigma
+    self.hr.setValue(eta*np.power(k*T/G/M/mu, 1.5)*np.sqrt(r))
+    Firr = 0.5*L/4/np.pi/r*np.maximum(self.hr.grad.value[0], 0.0)
+    if np.count_nonzero(T) == 0:
+        return fun(T+delta, self, delta=delta)
+    else:
+        return (3*tau/4 + 1.0/(tau+delta))*Fnu + Firr - sigma*T**4
 
 class circumbinary(object):
     def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10, nsweep=10):
@@ -14,9 +35,12 @@ class circumbinary(object):
         self.delta = delta
         self.nsweep = nsweep
         self._genGrid()
+        self.r = self.mesh.cellCenters.value[0]
         self._genSigma()
+        self._genT()
         self._genVr()
         self._buildEq()
+        self.kappa = np.zeros((ncell,))
 
     def _genGrid(self):
         """Generate a logarithmically spaced grid"""
@@ -42,10 +66,25 @@ class circumbinary(object):
         self.Sigma.constrain(0, self.mesh.facesLeft)
         self.Sigma.constrain(0, self.mesh.facesRight)
 
+    def _genT(self):
+        """Create a cell variable for temperature"""
+        self.T = CellVariable(name='Temperature',
+                                 mesh=self.mesh, hasOld=True)
+        # Initialize T with the interpolation of the various thermodynamic limits
+        r = self.r*r0 #In physical units (cgs)
+        self.Omega = np.sqrt(G*M/r**3)
+        self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
+        self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+        TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
+        self.T.setValue(np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4))
+        # Create a binary operator variable for h/r
+        self.hr = CellVariable(name='Ratio of thickness to radius, h/r',
+                                 mesh=self.mesh, hasOld=True)
+        self.hr.setValue(eta*np.power(k*self.T/G/M/mu, 1.5)*np.sqrt(r))
+
     def _genVr(self):
         """Generate the face variable that stores the velocity values"""
-        r = self.mesh.cellCenters.value[0]
-        r *= r0 #In physical units (cgs)
+        r = self.r*r0 #In physical units (cgs)
         self.Omega = np.sqrt(G*M/r**3)
         self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
         self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
@@ -82,6 +121,42 @@ class circumbinary(object):
         self.visc.setValue(r**0.5*nu*self.Sigma)
         rF = self.mesh.faceCenters.value # radii at the cell faces
         self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad())
+
+    def _interpT(self):
+        """
+        Get an initial guess for T using an interpolation of the solutions for T
+        in the various thermodynamic limits.
+        """
+        r = self.r*r0 #In physical units (cgs)
+        self.Omega = np.sqrt(G*M/r**3)
+        self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
+        self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+        TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
+        return np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4)
+
+
+    def exactT(self, init='old'):
+        """
+        Get the exact solution for T
+        keywords:
+        init: If equal to `old` then the old value of T is used as an initial guess, if
+              equal to `inter` then self._interpT is used to get the initial guess.
+        """
+        # I have not been able to get this to work
+        if init == 'old':
+            T0 = self.T.old.value
+        elif init == 'interp':
+            T0 = self._interpT()
+
+        result = root(fun, T0, args=(self,))
+
+        if result.success:
+            self.T.setValue(result.x)
+            self.T.updateOld()
+        else:
+            print result.message
+            print 'T was not updated'
+            print result.x
 
     def singleTimestep(self, dt=None):
         """
