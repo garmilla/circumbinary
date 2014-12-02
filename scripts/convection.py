@@ -27,13 +27,14 @@ def fun(T, self, delta = 1.0e-20):
         return (3*tau/4 + 1.0/(tau+delta))*Fnu + Firr - sigma*T**4
 
 class circumbinary(object):
-    def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10, nsweep=10):
+    def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10, nsweep=10, titer=10):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
         self.dt = dt
         self.delta = delta
         self.nsweep = nsweep
+        self.titer = titer
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self._genSigma()
@@ -77,6 +78,7 @@ class circumbinary(object):
         self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
         TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
         self.T.setValue(np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4))
+        self.T.updateOld()
         # Create a binary operator variable for h/r
         self.hr = CellVariable(name='Ratio of thickness to radius, h/r',
                                  mesh=self.mesh, hasOld=True)
@@ -134,6 +136,32 @@ class circumbinary(object):
         TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
         return np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4)
 
+    def _iterT(self, delta=1.0e-20):
+        """
+        Do an iteration on temperature
+        """
+        r = self.r*r0
+        T = self.T.value
+        low = np.where(T <= 166.81)
+        mid = np.where(np.logical_and(T > 166.81, T < 202.677))
+        high = np.where(T >= 202.677)
+        self.kappa[low] = 2.0e-4*np.square(T[low])
+        self.kappa[mid] = 2.0e16*np.power(T[mid], -7)
+        self.kappa[high] = 0.1*np.sqrt(T[high])
+        tau = 0.5*self.kappa*self.Sigma
+        nu = alpha*k/mu/self.Omega*T
+        Fnu = 9.0/8*self.Omega**2*nu*self.Sigma
+        self.hr.setValue(eta*np.power(k*T/G/M/mu, 1.5)*np.sqrt(r))
+        Firr = 0.5*L/4/np.pi/r*np.maximum(self.hr.grad.value[0], 0.0)
+        self.T.setValue(np.power((3*tau/4 + 1.0/(tau+delta))*Fnu + Firr, 0.25)/sigma)
+
+
+    def iterT(self):
+        """
+        Iterate over temperature to get a more reliable solution
+        """
+        for i in range(self.titer):
+            self._iterT()
 
     def exactT(self, init='old'):
         """
@@ -174,7 +202,7 @@ class circumbinary(object):
 
     def evolve(self):
         """
-        Evolve the system according to the values in its inisialization
+        Evolve the system according to the values in its initialization
         self.dt, self.nstep, and self.nsweep
         """
         for i in range(self.nstep):
@@ -197,6 +225,8 @@ if __name__ == '__main__':
                         help='The number of time steps to do')
     parser.add_argument('--nsweep', default=10, type=int,
                         help='The number of sweeps to do')
+    parser.add_argument('--titer', default=10, type=int,
+                        help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e7, type=float,
                         help='The time step size (Constant for the moment)')
     parser.add_argument('--delta', default=1.0e-10, type=float,
