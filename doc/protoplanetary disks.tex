@@ -45,7 +45,7 @@ and at high optical depths, $\tau \gg 1$,
 Extrapolated to all optical depths,
 
 \begin{equation} \label{eq:encon}
-\sigma T_m^4 = \left(1+\frac{1}{\tau}\right) F_{tid} + \left(\frac{3\tau}{4} + \frac{1}{\tau}\right) F_{v} + F_{irr}\,,
+\sigma T_m^4= \left(\frac{3\tau}{4} + \frac{1}{\tau}\right) \left(F_{v} + F_{tid}\right) + F_{irr}\,,
 \end{equation}
 
 where $T_m$ the disk midplane temperature. The optical depth is defined as $\tau =\frac{1}{2} \kappa \Sigma$, where $\kappa$ is the opacity.
@@ -159,7 +159,21 @@ We can derive a more general inner boundary condition with the hypothesis $\part
 
 The binary torque $\Lambda$ vanishes to 0 at the inner edge. If we further assume that the accretion rate $\dot{M}$ is 0, we get that $\Sigma$ must be a constant, which we can fix to 0 and return our inner boundary condition above.
 
-\textbf{I will add initial surface density soon. For now, we are using a delta function for the surface density.}
+\section{Steady State Solution}
+
+From Eq.\,\ref{eq:diskev}, we readily identify the accretion rate,
+
+\begin{equation}
+\frac{\dot{M}}{2\pi} = 3 r^{1/2} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right)\,,
+\end{equation}
+
+in the limit where the external torque $\Lambda \rightarrow 0$. To find the steady-state solution, we set the LHS of Eq.\,\ref{eq:diskev} to 0 and integrate to find the surface density,
+
+\begin{equation}
+\Sigma = -\frac{2}{3 \nu} \left(A+  \frac{B}{\sqrt{G M r}}\right)\,,
+\end{equation}
+
+where $A, B$, are integration constants. The integration constant $A$ satisfies the constraint $A = \frac{\dot{M}}{2\pi}$, where the accretion rate $\dot{M}$ is constant. For the standard constant accretion disk, the accretion rate satisfies $\dot{M} = 3\pi \nu \Sigma$, and this constrains the integration constant $B = 0$.
 
 \section{Numerical Method}
 
