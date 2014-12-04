@@ -76,6 +76,7 @@ class circumbinary(object):
         rF = self.mesh.faceCenters.value*r0 # radii at the cell faces
         self.Lambda = np.zeros(rF.shape)
         self.Lambda[0][1:] = self.fudge*self.q**2*M/r0*np.power(r0/(rF[0][1:]-r0), 4)
+        self.LambdaCell = self.fudge*self.q**2*M/r0*np.power(r0/(self.r*r0-r0), 4)
 
     def _genT(self):
         """Create a cell variable for temperature"""
@@ -135,8 +136,8 @@ class circumbinary(object):
             self._exactT()
         elif mode == 'iterate':
             self._iterT()
-        #nu = alpha*k*self.T/mu/self.Omega
-        nu = 6.0e14
+        nu = alpha*k*self.T/mu/self.Omega
+        #nu = 6.0e14
         self.visc.setValue(r**0.5*nu*self.Sigma)
         rF = self.mesh.faceCenters.value # radii at the cell faces
         self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad())
@@ -149,9 +150,12 @@ class circumbinary(object):
         r = self.r*r0 #In physical units (cgs)
         self.Omega = np.sqrt(G*M/r**3)
         self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
+        self.TtiThin = np.power(1/sigma/kappa0*(Omega0-self.Omega)*self.LambdaCell, 1.0/(4.0+beta))
         self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
         TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
-        return np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4)
+        TtiThick = np.power(3*kappa0/16/sigma*self.Sigma**2*(Omega0-self.Omega)*self.LambdaCell, 1.0/(4.0-beta))
+        return np.power(self.TvThin**4 + TvThick**4 + self.TtiThin**4 + TtiThick**4 + self.Ti**4, 1.0/4)
+        #return np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4)
 
     def _iterT(self, delta=1.0e-20):
         """
