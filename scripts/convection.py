@@ -135,7 +135,8 @@ class circumbinary(object):
             self._exactT()
         elif mode == 'iterate':
             self._iterT()
-        nu = alpha*k*self.T/mu/self.Omega
+        #nu = alpha*k*self.T/mu/self.Omega
+        nu = 6.0e14
         self.visc.setValue(r**0.5*nu*self.Sigma)
         rF = self.mesh.faceCenters.value # radii at the cell faces
         self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad())
@@ -201,7 +202,7 @@ class circumbinary(object):
             print 'T was not updated'
             print result.x
 
-    def singleTimestep(self, dt=None):
+    def singleTimestep(self, dt=None, update=True):
         """
         Evolve the system for a single timestep of size `dt`
         """
@@ -211,17 +212,25 @@ class circumbinary(object):
             for i in range(self.nsweep):
                 self.eq.sweep(var=self.Sigma, dt=dt)
                 self._updateVr()
-            self.Sigma.updateOld()
+            if update:
+                self.Sigma.updateOld()
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
 
-    def evolve(self, dt=None):
+    def evolve(self, dt=None, update=True):
         """
         Evolve the system according to the values in its initialization
         self.dt, self.nstep, and self.nsweep
         """
         for i in range(self.nstep):
-            self.singleTimestep(dt=dt)
+            self.singleTimestep(dt=dt, update=update)
+
+    def revert(self):
+        """
+        Revert evolve method if update=False was used, otherwise
+        it has no effect.
+        """
+        self.Sigma.setValue(self.Sigma.old.value)
 
 def run(**kargs):
     circ = circumbinary(**kargs) 
