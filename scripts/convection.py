@@ -75,7 +75,7 @@ class circumbinary(object):
         """Generate Torque"""
         rF = self.mesh.faceCenters.value*r0 # radii at the cell faces
         self.Lambda = np.zeros(rF.shape)
-        self.Lambda[1:] = self.fudge*self.q**2*M/r0*np.power(r0/(rF[1:]-r0), 4)
+        self.Lambda[0][1:] = self.fudge*self.q**2*M/r0*np.power(r0/(rF[0][1:]-r0), 4)
 
     def _genT(self):
         """Create a cell variable for temperature"""
@@ -215,13 +215,13 @@ class circumbinary(object):
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
 
-    def evolve(self):
+    def evolve(self, dt=None):
         """
         Evolve the system according to the values in its initialization
         self.dt, self.nstep, and self.nsweep
         """
         for i in range(self.nstep):
-            self.singleTimestep()
+            self.singleTimestep(dt=dt)
 
 def run(**kargs):
     circ = circumbinary(**kargs) 
