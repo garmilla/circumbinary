@@ -27,7 +27,8 @@ def fun(T, self, delta = 1.0e-20):
         return (3*tau/4 + 1.0/(tau+delta))*Fnu + Firr - sigma*T**4
 
 class circumbinary(object):
-    def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10, nsweep=10, titer=10):
+    def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10,
+                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -35,9 +36,12 @@ class circumbinary(object):
         self.delta = delta
         self.nsweep = nsweep
         self.titer = titer
+        self.fudge = fudge
+        self.q = q
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self._genSigma()
+        self._genTorque()
         self._genT()
         self._genVr()
         self._buildEq()
@@ -67,6 +71,12 @@ class circumbinary(object):
         self.Sigma.constrain(0, self.mesh.facesLeft)
         self.Sigma.constrain(0, self.mesh.facesRight)
 
+    def _genTorque(self):
+        """Generate Torque"""
+        rF = self.mesh.faceCenters.value*r0 # radii at the cell faces
+        self.Lambda = np.zeros(rF.shape)
+        self.Lambda[1:] = self.fudge*self.q**2*M/r0*np.power(r0/(rF[1:]-r0), 4)
+
     def _genT(self):
         """Create a cell variable for temperature"""
         self.T = CellVariable(name='Temperature',
@@ -94,7 +104,8 @@ class circumbinary(object):
         self.vr = FaceVariable(name='Radial Velocity', mesh=self.mesh, rank=1)
         rF = self.mesh.faceCenters.value # radii at the cell faces
         # I add the delta to avoid divisions by zero
-        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad())
+        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
+                         + 2/np.sqrt(r0)*self.Lambda*np.sqrt(rF/G/M))
 
     def _buildEq(self):
         """
