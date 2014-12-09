@@ -140,7 +140,8 @@ class circumbinary(object):
         #nu = 6.0e14
         self.visc.setValue(r**0.5*nu*self.Sigma)
         rF = self.mesh.faceCenters.value # radii at the cell faces
-        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad())
+        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
+                         + 2/np.sqrt(r0)*self.Lambda*np.sqrt(rF/G/M))
 
     def _interpT(self):
         """
