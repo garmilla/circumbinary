@@ -14,3 +14,4 @@ AU = 1.49597871e13
 r0 = 0.2*AU # Semimajor axis of the binary system
 L = 3.839e33
 M = 1.9891e33
+Omega0 = (G*M/r0**3)**0.5
