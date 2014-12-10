@@ -2,12 +2,12 @@ import argparse
 import numpy as np
 from scipy.optimize import root
 
-from fipy import CylindricalGrid1D, CellVariable, TransientTerm, UpwindConvectionTerm
+from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, UpwindConvectionTerm
 
 from constants import *
 
 class circumbinary(object):
-    def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-10,
+    def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1):
         self.rmax = rmax
         self.ncell = ncell
@@ -24,6 +24,7 @@ class circumbinary(object):
         self.gamma = gamma
         self.fudge = fudge
         self.q = q
+        self.t = 0.0
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -41,12 +42,14 @@ class circumbinary(object):
         dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
         self.mesh = CylindricalGrid1D(dr=dr, origin=(1.0/self.gamma,))
 
-    def _genSigma(self, width=0.2):
+    def _genSigma(self, width=0.1):
         """Create dependent variable Sigma"""
         # Gaussian initial condition
         value = self.mDisk*M/np.sqrt(2*np.pi)/(self.gamma*a*width)*\
                 np.exp(-0.5*np.square(self.r-1.0)/width**2)/(2*np.pi*self.gamma*self.r*a)
         value /= M/(self.gamma*a)**2
+        idxs = np.where(self.r < 0.1)
+        value[idxs] = 0.0
         value = tuple(value)
 
         # Create the dependent variable and set the boundary conditions
@@ -58,9 +61,12 @@ class circumbinary(object):
 
     def _genTorque(self):
         """Generate Torque"""
-        self.Lambda = np.zeros(self.rF.shape)
-        self.Lambda[1:] = self.chi*np.power(1.0/(self.rF[1:]*self.gamma-1.0), 4)
-        self.LambdaCell = self.chi*np.power(1.0/(self.r*self.gamma-1.0), 4)
+        self.Lambda = FaceVariable(name='Torque at cell faces', mesh=self.mesh, rank=1)
+        self.LambdaCell = CellVariable(name='Torque at cell centers', mesh=self.mesh)
+        LambdaArr = np.zeros(self.rF.shape)
+        LambdaArr[1:] = self.chi*np.power(1.0/(self.rF[1:]*self.gamma-1.0), 4)
+        self.Lambda.setValue(LambdaArr)
+        self.LambdaCell.setValue(self.chi*np.power(1.0/(self.r*self.gamma-1.0), 4))
 
     def _interpT(self):
         """
@@ -95,8 +101,8 @@ class circumbinary(object):
         nu = alpha*k*self.T/mu/self.Omega
         self.visc = r**0.5*nu*self.Sigma
         # I add the delta to avoid divisions by zero
-        self.vr = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()\
-                  + self.Lambda*np.sqrt(self.rF)
+        self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
+        self.vrTid = self.Lambda*np.sqrt(self.rF)
 
     def _buildEq(self):
         """
@@ -104,29 +110,36 @@ class circumbinary(object):
         schemes, e.g. Crank-Nicholson.
         """
         # The current scheme is an implicit-upwind
-        self.eq = TransientTerm() == - UpwindConvectionTerm(coeff=self.vr)
+        self.eqVisc = TransientTerm() == - UpwindConvectionTerm(coeff=self.vrVisc)
+        self.eqTid = TransientTerm() == - UpwindConvectionTerm(coeff=self.vrTid)
 
-    def singleTimestep(self, dt=None, update=True):
+    def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
         Evolve the system for a single timestep of size `dt`
         """
-        if not dt:
-            dt = self.dt
+        if dt:
+            self.dt = dt
+        if emptyDt:
+            vr = self.vrVisc.value[0] + self.vrTid.value[0]
+            self.dt = 0.5*np.amin(np.absolute(self.mesh.cellVolumes/(self.rF[:-1]*vr[:-1])))
         try:
             for i in range(self.nsweep):
-                self.eq.sweep(var=self.Sigma, dt=dt)
-            if update:
-                self.Sigma.updateOld()
+                res = self.eqVisc.sweep(var=self.Sigma, dt=self.dt/2)
+                print res
+            self.Sigma.updateOld()
+            self.eqTid.solve(var=self.Sigma, dt=self.dt/2)
+            self.Sigma.updateOld()
+            self.t += self.dt
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
 
-    def evolve(self, dt=None, update=True):
+    def evolve(self, **kargs):
         """
         Evolve the system according to the values in its initialization
         self.dt, self.nstep, and self.nsweep
         """
         for i in range(self.nstep):
-            self.singleTimestep(dt=dt, update=update)
+            self.singleTimestep(**kargs)
 
     def revert(self):
         """
@@ -156,7 +169,7 @@ if __name__ == '__main__':
                         help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
-    parser.add_argument('--delta', default=1.0e-10, type=float,
+    parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')
     kargs = vars(parser.parse_args())
     run(**kargs)
