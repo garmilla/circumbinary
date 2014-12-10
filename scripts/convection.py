@@ -2,33 +2,13 @@ import argparse
 import numpy as np
 from scipy.optimize import root
 
-from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, UpwindConvectionTerm
+from fipy import CylindricalGrid1D, CellVariable, TransientTerm, UpwindConvectionTerm
 
 from constants import *
 
-# We can get the exact solution for T by finding the root of this function
-# I doesn't work!
-def fun(T, self, delta = 1.0e-20):
-    r = self.mesh.cellCenters.value[0]*r0
-    low = np.where(T <= 166.81)
-    mid = np.where(np.logical_and(T > 166.81, T < 202.677))
-    high = np.where(T >= 202.677)
-    self.kappa[low] = 2.0e-4*np.square(T[low])
-    self.kappa[mid] = 2.0e16*np.power(T[mid], -7)
-    self.kappa[high] = 0.1*np.sqrt(T[high])
-    tau = 0.5*self.kappa*self.Sigma
-    nu = alpha*k/mu/self.Omega*T
-    Fnu = 9.0/8*self.Omega**2*nu*self.Sigma
-    self.hr.setValue(eta*np.power(k*T/G/M/mu, 1.5)*np.sqrt(r))
-    Firr = 0.5*L/4/np.pi/r*np.maximum(self.hr.grad.value[0], 0.0)
-    if np.count_nonzero(T) == 0:
-        return fun(T+delta, self, delta=delta)
-    else:
-        return (3*tau/4 + 1.0/(tau+delta))*Fnu + Firr - sigma*T**4
-
 class circumbinary(object):
-    def __init__(self, rmax=1.0e3, ncell=100, nstep=100, dt=1.0e7, delta=1.0e-10,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0):
+    def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-10,
+                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -36,32 +16,37 @@ class circumbinary(object):
         self.delta = delta
         self.nsweep = nsweep
         self.titer = titer
+        self.mDisk = mDisk
+        Omega0 = (G*M/(gamma*a)**3)**0.5
+        nu0 = alpha*cs**2/Omega0
+        self.chi = 2*fudge*q**2*np.sqrt(G*M)/nu0/a*(gamma*a)**1.5
+        self.T0 = mu*Omega0/alpha/k*nu0
+        self.gamma = gamma
         self.fudge = fudge
         self.q = q
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
+        self.rF = self.mesh.faceCenters.value[0]
         self._genSigma()
         self._genTorque()
         self._genT()
         self._genVr()
         self._buildEq()
-        self.kappa = np.zeros((ncell,))
 
     def _genGrid(self):
         """Generate a logarithmically spaced grid"""
-        logFaces = np.linspace(0, np.log(self.rmax), num=self.ncell+1)
+        logFaces = np.linspace(-np.log(self.gamma), np.log(self.rmax), num=self.ncell+1)
         logFacesLeft = logFaces[:-1]
         logFacesRight = logFaces[1:]
         dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-        self.mesh = CylindricalGrid1D(dr=dr, origin=(1,))
+        self.mesh = CylindricalGrid1D(dr=dr, origin=(1.0/self.gamma,))
 
-    def _genSigma(self):
+    def _genSigma(self, width=0.2):
         """Create dependent variable Sigma"""
-        # Simplest possible initial condition,
-        # zero everywhere except for a single cell at the middle.
-        r = self.mesh.cellCenters.value[0]
-        value = np.zeros(r.shape)
-        value[len(value)/2] = 10000.0
+        # Gaussian initial condition
+        value = self.mDisk*M/np.sqrt(2*np.pi)/(self.gamma*a*width)*\
+                np.exp(-0.5*np.square(self.r-1.0)/width**2)/(2*np.pi*self.gamma*self.r*a)
+        value /= M/(self.gamma*a)**2
         value = tuple(value)
 
         # Create the dependent variable and set the boundary conditions
@@ -73,40 +58,45 @@ class circumbinary(object):
 
     def _genTorque(self):
         """Generate Torque"""
-        rF = self.mesh.faceCenters.value*r0 # radii at the cell faces
-        self.Lambda = np.zeros(rF.shape)
-        self.Lambda[0][1:] = self.fudge*self.q**2*M/r0*np.power(r0/(rF[0][1:]-r0), 4)
-        self.LambdaCell = self.fudge*self.q**2*M/r0*np.power(r0/(self.r*r0-r0), 4)
+        self.Lambda = np.zeros(self.rF.shape)
+        self.Lambda[1:] = self.chi*np.power(1.0/(self.rF[1:]*self.gamma-1.0), 4)
+        self.LambdaCell = self.chi*np.power(1.0/(self.r*self.gamma-1.0), 4)
+
+    def _interpT(self):
+        """
+        Get an initial guess for T using an interpolation of the solutions for T
+        in the various thermodynamic limits.
+        """
+        Lambda = self.Lambda/self.chi*self.fudge*self.q**2*G*M/a
+        LambdaCell = self.LambdaCell/self.chi*self.fudge*self.q**2*G*M/a
+        Sigma = self.Sigma*M/(self.gamma*a)**2
+        r = self.r*a*self.gamma #In physical units (cgs)
+        self.Omega = np.sqrt(G*M/r**3)
+        self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
+        self.TtiThin = np.power(1/sigma/kappa0*(OmegaIn-self.Omega)*LambdaCell, 1.0/(4.0+beta))
+        self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+        self.TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*Sigma**2, 1.0/(3.0-beta))
+        self.TtiThick = np.power(3*kappa0/16/sigma*Sigma**2*(OmegaIn-self.Omega)*LambdaCell, 1.0/(4.0-beta))
+        return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
 
     def _genT(self):
         """Create a cell variable for temperature"""
-        self.T = CellVariable(name='Temperature',
-                                 mesh=self.mesh, hasOld=True)
         # Initialize T with the interpolation of the various thermodynamic limits
-        r = self.r*r0 #In physical units (cgs)
-        self.Omega = np.sqrt(G*M/r**3)
-        self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
-        self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-        self.T.setValue(self._interpT())
-        self.T.updateOld()
-        # Create a binary operator variable for h/r
-        self.hr = CellVariable(name='Ratio of thickness to radius, h/r',
-                                 mesh=self.mesh, hasOld=True)
-        self.hr.setValue(eta*np.power(k*self.T/G/M/mu, 1.5)*np.sqrt(r))
+        #r = self.r*a #In physical units (cgs)
+        #self.Omega = np.sqrt(G*M/r**3)
+        #self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
+        #self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+        self.T = self._interpT()
 
     def _genVr(self):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
         nu = alpha*k*self.T/mu/self.Omega
-        self.visc = CellVariable(name='Viscous Term', mesh=self.mesh)
-        self.visc.setValue(r**0.5*nu*self.Sigma)
-        # Create a face variable to store the values of the radial velocity
-        self.vr = FaceVariable(name='Radial Velocity', mesh=self.mesh, rank=1)
-        rF = self.mesh.faceCenters.value # radii at the cell faces
+        self.visc = r**0.5*nu*self.Sigma
         # I add the delta to avoid divisions by zero
-        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
-                         + 2/np.sqrt(r0)*self.Lambda*np.sqrt(rF/G/M))
+        self.vr = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()\
+                  + self.Lambda*np.sqrt(self.rF)
 
     def _buildEq(self):
         """
@@ -115,97 +105,6 @@ class circumbinary(object):
         """
         # The current scheme is an implicit-upwind
         self.eq = TransientTerm() == - UpwindConvectionTerm(coeff=self.vr)
-
-    def _updateVr(self, mode='interp'):
-        """
-        Update the value of the velocity. This function assumes the value of
-        Sigma has been updated by the solve or sweep method.
-
-        Keywords
-        mode: If equal to `interp`, use the simple interpolation scheme to update
-              the temperature. If equal to `exact`, attempt an exact solutuion of
-              the temperature equation using a nonlinear solver. If equal to
-              `iterate`, use an iteration scheme on the temperature equation to
-              approximate the solution.
-        """
-        r = self.r
-        if mode == 'interp':
-            self.T.setValue(self._interpT())
-            self.T.updateOld()
-        elif mode == 'exact':
-            self._exactT()
-        elif mode == 'iterate':
-            self._iterT()
-        nu = alpha*k*self.T/mu/self.Omega
-        #nu = 6.0e14
-        self.visc.setValue(r**0.5*nu*self.Sigma)
-        rF = self.mesh.faceCenters.value # radii at the cell faces
-        self.vr.setValue(-3/r0**2/rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
-                         + 2/np.sqrt(r0)*self.Lambda*np.sqrt(rF/G/M))
-
-    def _interpT(self):
-        """
-        Get an initial guess for T using an interpolation of the solutions for T
-        in the various thermodynamic limits.
-        """
-        r = self.r*r0 #In physical units (cgs)
-        self.Omega = np.sqrt(G*M/r**3)
-        self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
-        self.TtiThin = np.power(1/sigma/kappa0*(Omega0-self.Omega)*self.LambdaCell, 1.0/(4.0+beta))
-        self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-        TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*self.Sigma**2, 1.0/(3.0-beta))
-        TtiThick = np.power(3*kappa0/16/sigma*self.Sigma**2*(Omega0-self.Omega)*self.LambdaCell, 1.0/(4.0-beta))
-        return np.power(self.TvThin**4 + TvThick**4 + self.TtiThin**4 + TtiThick**4 + self.Ti**4, 1.0/4)
-        #return np.power(self.TvThin**4 + TvThick**4 + self.Ti**4, 1.0/4)
-
-    def _iterT(self, delta=1.0e-20):
-        """
-        Do an iteration on temperature
-        """
-        r = self.r*r0
-        T = self.T.value
-        low = np.where(T <= 166.81)
-        mid = np.where(np.logical_and(T > 166.81, T < 202.677))
-        high = np.where(T >= 202.677)
-        self.kappa[low] = 2.0e-4*np.square(T[low])
-        self.kappa[mid] = 2.0e16*np.power(T[mid], -7)
-        self.kappa[high] = 0.1*np.sqrt(T[high])
-        tau = 0.5*self.kappa*self.Sigma
-        nu = alpha*k/mu/self.Omega*T
-        Fnu = 9.0/8*self.Omega**2*nu*self.Sigma
-        self.hr.setValue(eta*np.power(k*T/G/M/mu, 1.5)*np.sqrt(r))
-        Firr = 0.5*L/4/np.pi/r*np.maximum(self.hr.grad.value[0], 0.0)
-        self.T.setValue(np.power((3*tau/4 + 1.0/(tau+delta))*Fnu + Firr, 0.25)/sigma)
-
-    def iterT(self):
-        """
-        Iterate over temperature to get a more reliable solution
-        """
-        for i in range(self.titer):
-            self._iterT()
-
-    def _exactT(self, init='old'):
-        """
-        Get the exact solution for T
-        keywords:
-        init: If equal to `old` then the old value of T is used as an initial guess, if
-              equal to `inter` then self._interpT is used to get the initial guess.
-        """
-        # I have not been able to get this to work
-        if init == 'old':
-            T0 = self.T.old.value
-        elif init == 'interp':
-            T0 = self._interpT()
-
-        result = root(fun, T0, args=(self,))
-
-        if result.success:
-            self.T.setValue(result.x)
-            self.T.updateOld()
-        else:
-            print result.message
-            print 'T was not updated'
-            print result.x
 
     def singleTimestep(self, dt=None, update=True):
         """
@@ -216,7 +115,6 @@ class circumbinary(object):
         try:
             for i in range(self.nsweep):
                 self.eq.sweep(var=self.Sigma, dt=dt)
-                self._updateVr()
             if update:
                 self.Sigma.updateOld()
         except FloatingPointError:
@@ -256,7 +154,7 @@ if __name__ == '__main__':
                         help='The number of sweeps to do')
     parser.add_argument('--titer', default=10, type=int,
                         help='The number of temprature iterations')
-    parser.add_argument('--dt', default=1.0e7, type=float,
+    parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
     parser.add_argument('--delta', default=1.0e-10, type=float,
                         help='Small number to add to avoid divisions by zero')
