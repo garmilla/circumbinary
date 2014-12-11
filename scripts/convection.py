@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from scipy.optimize import root
 
-from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, UpwindConvectionTerm
+from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
 
 from constants import *
 
@@ -24,6 +24,7 @@ class circumbinary(object):
         self.gamma = gamma
         self.fudge = fudge
         self.q = q
+        self.nu0 = nu0
         self.t = 0.0
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
@@ -83,7 +84,8 @@ class circumbinary(object):
         self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
         self.TvThick = np.power(27.0/64*kappa0*alpha*k/sigma/mu*self.Omega*Sigma**2, 1.0/(3.0-beta))
         self.TtiThick = np.power(3*kappa0/16/sigma*Sigma**2*(OmegaIn-self.Omega)*LambdaCell, 1.0/(4.0-beta))
-        return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
+        #return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
+        return np.power(self.TvThin**4 + self.TvThick**4 + self.Ti**4, 1.0/4)/self.T0
 
     def _genT(self):
         """Create a cell variable for temperature"""
@@ -98,10 +100,12 @@ class circumbinary(object):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
-        nu = alpha*k*self.T/mu/self.Omega
-        self.visc = r**0.5*nu*self.Sigma
+        #nu = alpha*k*self.T/mu/self.Omega
+        #self.nu = self.nu0
+        self.nu = 1.0
+        self.visc = r**0.5*self.nu*self.Sigma
         # I add the delta to avoid divisions by zero
-        self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
+        self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
         self.vrTid = self.Lambda*np.sqrt(self.rF)
 
     def _buildEq(self):
@@ -110,8 +114,7 @@ class circumbinary(object):
         schemes, e.g. Crank-Nicholson.
         """
         # The current scheme is an implicit-upwind
-        self.eqVisc = TransientTerm() == - UpwindConvectionTerm(coeff=self.vrVisc)
-        self.eqTid = TransientTerm() == - UpwindConvectionTerm(coeff=self.vrTid)
+        self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
 
     def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
@@ -121,14 +124,12 @@ class circumbinary(object):
             self.dt = dt
         if emptyDt:
             vr = self.vrVisc.value[0] + self.vrTid.value[0]
-            self.dt = 0.5*np.amin(np.absolute(self.mesh.cellVolumes/(self.rF[:-1]*vr[:-1])))
+            self.dt = 1.0*np.amin(np.absolute(self.mesh.cellVolumes/(self.rF[:-1]*vr[:-1])))
         try:
             for i in range(self.nsweep):
-                res = self.eqVisc.sweep(var=self.Sigma, dt=self.dt/2)
-                print res
-            self.Sigma.updateOld()
-            self.eqTid.solve(var=self.Sigma, dt=self.dt/2)
-            self.Sigma.updateOld()
+                res = self.eq.sweep(dt=self.dt)
+            if update:
+                self.Sigma.updateOld()
             self.t += self.dt
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
