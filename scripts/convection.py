@@ -101,7 +101,7 @@ class circumbinary(object):
         nu = alpha*k*self.T/mu/self.Omega
         self.visc = r**0.5*nu*self.Sigma
         # I add the delta to avoid divisions by zero
-        self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad()
+        self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
         self.vrTid = self.Lambda*np.sqrt(self.rF)
 
     def _buildEq(self):
