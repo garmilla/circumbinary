@@ -1,4 +1,5 @@
 import argparse
+import pickle
 import numpy as np
 from scipy.optimize import root
 
@@ -8,7 +9,7 @@ from constants import *
 
 class circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1):
+                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1, odir='output'):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -26,6 +27,7 @@ class circumbinary(object):
         self.q = q
         self.nu0 = nu0
         self.t = 0.0
+        self.odir = odir
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -34,6 +36,8 @@ class circumbinary(object):
         self._genT()
         self._genVr()
         self._buildEq()
+        with open(odir+'/circ.pkl', 'wb') as f:
+            pickle.dump(self, f)
 
     def _genGrid(self):
         """Generate a logarithmically spaced grid"""
@@ -149,9 +153,19 @@ class circumbinary(object):
         """
         self.Sigma.setValue(self.Sigma.old.value)
 
+    def writeToFile(self):
+        fName = self.odir + '/t{0}.pkl'.format(self.t)
+        with open(fName, 'wb') as f:
+            pickle.dump((self.t, self.Sigma.getValue()), f)
+
+
 def run(**kargs):
+    tmax = kargs.get('tmax')
+    kargs.pop('tmax')
     circ = circumbinary(**kargs) 
-    circ.evolve()
+    while circ.t < tmax:
+        circ.evolve(emptyDt=True)
+        circ.writeToFile()
     print circ.Sigma
     return circ.Sigma
 
@@ -172,5 +186,9 @@ if __name__ == '__main__':
                         help='The time step size (Constant for the moment)')
     parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')
+    parser.add_argument('--odir', default='output', type=str,
+                        help='Directory where results are saved to')
+    parser.add_argument('--tmax', default=3.0, type=float,
+                        help='Maximum time to evolve the model to')
     kargs = vars(parser.parse_args())
     run(**kargs)
