@@ -1,7 +1,6 @@
 import argparse
 import pickle
 import numpy as np
-from scipy.optimize import root
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
 
