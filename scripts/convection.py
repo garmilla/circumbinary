@@ -1,3 +1,5 @@
+import os
+import re
 import argparse
 import pickle
 import numpy as np
@@ -8,7 +10,7 @@ from constants import *
 
 class circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1, odir='output'):
+                 nsweep=10, titer=10, fudge=1.0e-2, q=1.0, gamma=100, mDisk=0.1, odir='output'):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -30,21 +32,20 @@ class circumbinary(object):
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
+        self.gap = np.where(self.rF < 1.8/gamma)
         self._genSigma()
         self._genTorque()
         self._genT()
         self._genVr()
         self._buildEq()
-        with open(odir+'/circ.pkl', 'wb') as f:
-            pickle.dump(self, f)
 
-    def _genGrid(self):
+    def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
-        logFaces = np.linspace(-np.log(self.gamma), np.log(self.rmax), num=self.ncell+1)
+        logFaces = np.linspace(-np.log(self.gamma/inB), np.log(self.rmax), num=self.ncell+1)
         logFacesLeft = logFaces[:-1]
         logFacesRight = logFaces[1:]
         dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-        self.mesh = CylindricalGrid1D(dr=dr, origin=(1.0/self.gamma,))
+        self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
 
     def _genSigma(self, width=0.1):
         """Create dependent variable Sigma"""
@@ -127,7 +128,13 @@ class circumbinary(object):
             self.dt = dt
         if emptyDt:
             vr = self.vrVisc.value[0] + self.vrTid.value[0]
-            self.dt = 1.0*np.amin(np.absolute(self.mesh.cellVolumes/(self.rF[:-1]*vr[:-1])))
+            #vr[np.where(self.Sigma.value)] = self.delta
+            flux = self.rF[1:]*vr[1:]-self.rF[:-1]*vr[:-1]
+            flux = np.maximum(flux, self.delta)
+            dts = self.mesh.cellVolumes/(flux)
+            dts[np.where(self.Sigma.value == 0.0)] = np.inf
+            dts[self.gap] = np.inf
+            self.dt = 1.0*np.amin(dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
@@ -157,16 +164,45 @@ class circumbinary(object):
         with open(fName, 'wb') as f:
             pickle.dump((self.t, self.Sigma.getValue()), f)
 
+    def readFromFile(self, fName):
+        with open(fName, 'rb') as f:
+            t, Sigma = pickle.load(f)
+        self.t = t
+        self.Sigma.setValue(Sigma)
+
+    def loadTimesList(self):
+        path = self.odir
+        files = os.listdir(path)
+        self.times = np.zeros((len(files)-1,))
+        for i, f in enumerate(files[1:]):
+            match = re.match(r"^t((\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\.pkl", f)
+            if match == None:
+                print "WARNING: File {0} has an unexepected name".format(f)
+                continue
+            self.times[i] = float(match.group(1))
+        self.files = files[1:]
+
+def loadRestults(path):
+    fName = os.path.join(path, 'init.pkl')
+    with open(fName, 'rb') as f:
+        kargs = pickle.load(f)
+    circ = circumbinary(**kargs)
+    circ.loadTimesList()
+    iMax = circ.times.argmax()
+    fMax = os.path.join(path, circ.files[iMax])
+    circ.readFromFile(fMax)
+    return circ
+
 
 def run(**kargs):
     tmax = kargs.get('tmax')
     kargs.pop('tmax')
     circ = circumbinary(**kargs) 
+    with open(circ.odir+'/init.pkl', 'wb') as f:
+        pickle.dump(kargs, f)
     while circ.t < tmax:
         circ.evolve(emptyDt=True)
         circ.writeToFile()
-    print circ.Sigma
-    return circ.Sigma
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
