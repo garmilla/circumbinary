@@ -32,7 +32,7 @@ class circumbinary(object):
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
-        self.gap = np.where(self.rF < 1.8/gamma)
+        self.gap = np.where(self.rF < 1.6/gamma)
         self._genSigma()
         self._genTorque()
         self._genT()
@@ -70,8 +70,10 @@ class circumbinary(object):
         self.LambdaCell = CellVariable(name='Torque at cell centers', mesh=self.mesh)
         LambdaArr = np.zeros(self.rF.shape)
         LambdaArr[1:] = self.chi*np.power(1.0/(self.rF[1:]*self.gamma-1.0), 4)
+        LambdaArr[self.gap] = 0.0; LambdaArr[self.gap] = LambdaArr.max()
         self.Lambda.setValue(LambdaArr)
         self.LambdaCell.setValue(self.chi*np.power(1.0/(self.r*self.gamma-1.0), 4))
+        self.LambdaCell[np.where(self.LambdaCell > LambdaArr.max())] = LambdaArr.max()
 
     def _interpT(self):
         """
@@ -133,8 +135,8 @@ class circumbinary(object):
             flux = np.maximum(flux, self.delta)
             dts = self.mesh.cellVolumes/(flux)
             dts[np.where(self.Sigma.value == 0.0)] = np.inf
-            dts[self.gap] = np.inf
-            self.dt = 1.0*np.amin(dts)
+            #dts[self.gap] = np.inf
+            self.dt = 0.5*np.amin(dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
@@ -186,6 +188,7 @@ def loadRestults(path):
     fName = os.path.join(path, 'init.pkl')
     with open(fName, 'rb') as f:
         kargs = pickle.load(f)
+    kargs['odir'] = path # In case the path has been changed
     circ = circumbinary(**kargs)
     circ.loadTimesList()
     iMax = circ.times.argmax()
