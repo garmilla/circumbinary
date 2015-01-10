@@ -20,7 +20,7 @@ AU = 1.49597871e13
 a = 0.2*AU # Semimajor axis of the binary system
 L = 3.839e33
 M = 1.9891e33
-OmegaIn = (G*M/a*3*3)**0.5
+OmegaIn = (G*M/a**3)**0.5
 f = 0.01
 q = 1
 
@@ -28,15 +28,16 @@ kappa0 = 0.1
 kappa1 = 2*10**16
 kappa2 = 2*10**(-4)
 
-Trange = np.linspace(1,50000,50000)
+Trange = np.linspace(1,50000,10)
 
 rmin = 12.6021 #log scale, 4e12 cm
-rmax = 17.4771 #log scale, 3e17 cm
-ngrid = 1015 #no. cells
+rmax = 13
+#rmax = 17.4771 #log scale, 3e17 cm
+ngrid = 5 #no. cells
 
 Sigmin = 1000 #min density in cgs
-Sigmax = 1501 #max density +1 in cgs
-Sigres = 2000 #density resolution
+Sigmax = 1500 #max density +1 in cgs
+Sigres = 1000 #density resolution
 
 temp = [] #create m x n array for temp
 s = np.logspace(rmin,rmax,ngrid) #dummy grid to reference for indicing
@@ -72,7 +73,6 @@ for r in np.logspace(rmin,rmax,ngrid):
         def func2(T):
             return sigma*T**4 - 3*(kappa2*T**2*Sigma*0.125 + 2/(kappa2*Sigma*T**2))*(ftid(r,Sigma) + fv(r,T,Sigma)) - sigma*Tirr(r)**4 
         
-       
         Tcheck = optimize.bisect(func,1,50000)
         
         def Tfin(Tcheck):
@@ -87,13 +87,17 @@ for r in np.logspace(rmin,rmax,ngrid):
         
   
         z = np.where(s==r)[0][0]
-        Tfin(Tcheck)
+   
         temp[np.where(s==r)[0][0]].append(Tfin(Tcheck))
 
+#        print func(Trange), optimize.bisect(func,1,10000)
 print temp
+
+#fix minsig, minrad
+
 #print Tfin(Tcheck)
 plt.loglog(s/AU, temp)
 plt.xlabel(r'radius [AU]')
 plt.ylabel(r'T [K]')
 plt.show()
-
+#
