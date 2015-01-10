@@ -184,6 +184,14 @@ class circumbinary(object):
             self.times[i] = float(match.group(1))
         self.files = files[1:]
 
+    def loadTime(self, t):
+        """
+        Load the file with the time closest to `t`
+        """
+        idx = (np.abs(self.times-t)).argmin()
+        fName = self.odir + '/t'+str(self.times[idx]) + '.pkl'
+        self.readFromFile(fName)
+
 def loadRestults(path):
     fName = os.path.join(path, 'init.pkl')
     with open(fName, 'rb') as f:
