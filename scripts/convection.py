@@ -37,7 +37,7 @@ class Circumbinary(object):
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
-        self.gap = np.where(self.rF < 1.6/gamma)
+        self.gap = np.where(self.rF < 1.7/gamma)
         self._genSigma()
         self._genTorque()
         if bellLin:
@@ -49,7 +49,9 @@ class Circumbinary(object):
             r = self.r*a*self.gamma #In physical units (cgs)
             self.Omega = np.sqrt(G*M/r**3)
             Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-            self.T = np.zeros(self.r.shape)
+            self._T = np.zeros(Ti.shape)
+            self.T = CellVariable(name='Temperature',
+                                 mesh=self.mesh, hasOld=True, value=Ti)
             # Define wrapper function that uses the interpolator and stores the results
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
@@ -132,7 +134,7 @@ class Circumbinary(object):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
-        self.nu = alpha*k*self.T/mu/self.Omega
+        self.nu = alpha*k*self.T/mu/self.Omega/self.nu0
         self.visc = r**0.5*self.nu*self.Sigma
         # I add the delta to avoid divisions by zero
         self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
@@ -150,7 +152,8 @@ class Circumbinary(object):
         """
         Update the temperature using the Bell & Lin opacities
         """
-        self._bellLinT(self.Sigma.value, self.T)
+        self._bellLinT(self.Sigma.value, self._T)
+        self.T.setValue(self._T)
 
     def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
@@ -252,7 +255,7 @@ if __name__ == '__main__':
              description="Script that solves the convection problem in a cylindrical grid")
     parser.add_argument('--rmax', default=1.0e3, type=float,
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
-    parser.add_argument('--ncell', default=100, type=int,
+    parser.add_argument('--ncell', default=200, type=int,
                         help='The number of cells to use in the grid')
     parser.add_argument('--nstep', default=100, type=int,
                         help='The number of time steps to do')
