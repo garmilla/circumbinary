@@ -11,7 +11,7 @@ import thermopy
 from constants import *
 from utils import pickle_results
 
-class circumbinary(object):
+class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-2, q=1.0, gamma=100, mDisk=0.1, odir='output',
                  bellLin=True, **kargs):
