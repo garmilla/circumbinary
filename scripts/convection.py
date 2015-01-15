@@ -40,9 +40,6 @@ class Circumbinary(object):
         self.gap = np.where(self.rF < 1.6/gamma)
         self._genSigma()
         self._genTorque()
-        self._genT()
-        self._genVr()
-        self._buildEq()
         if bellLin:
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
@@ -50,7 +47,9 @@ class Circumbinary(object):
             # Define callable function T(Sigma)
             rGrid = np.log10(self.r)
             r = self.r*a*self.gamma #In physical units (cgs)
+            self.Omega = np.sqrt(G*M/r**3)
             Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+            self._T = np.zeros(self.r.shape)
             # Define wrapper function that uses the interpolator and stores the results
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
@@ -59,7 +58,12 @@ class Circumbinary(object):
                 T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
                 T[bad] = Ti[bad]
             # Store interpolator as an instance method
-            self.bellLin = func
+            self._bellLinT = func
+            self._bellLinUpdate()
+        else:
+            self._genT()
+        self._genVr()
+        self._buildEq()
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -128,9 +132,7 @@ class Circumbinary(object):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
-        #nu = alpha*k*self.T/mu/self.Omega
-        #self.nu = self.nu0
-        self.nu = 1.0
+        self.nu = alpha*k*self.T/mu/self.Omega
         self.visc = r**0.5*self.nu*self.Sigma
         # I add the delta to avoid divisions by zero
         self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
@@ -143,6 +145,13 @@ class Circumbinary(object):
         """
         # The current scheme is an implicit-upwind
         self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
+
+    def _bellLinUpdate(self):
+        """
+        Update the temperature using the Bell & Lin opacities
+        """
+        self._bellLinT(self.Sigma.value, self._T)
+        self.T = self._T
 
     def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
@@ -162,6 +171,8 @@ class Circumbinary(object):
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
+                if self.bellLin:
+                    self._bellLinUpdate()
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
