@@ -49,7 +49,7 @@ class Circumbinary(object):
             r = self.r*a*self.gamma #In physical units (cgs)
             self.Omega = np.sqrt(G*M/r**3)
             Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-            self._T = np.zeros(self.r.shape)
+            self.T = np.zeros(self.r.shape)
             # Define wrapper function that uses the interpolator and stores the results
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
@@ -150,8 +150,7 @@ class Circumbinary(object):
         """
         Update the temperature using the Bell & Lin opacities
         """
-        self._bellLinT(self.Sigma.value, self._T)
-        self.T = self._T
+        self._bellLinT(self.Sigma.value, self.T)
 
     def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
