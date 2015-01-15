@@ -232,7 +232,7 @@ def loadRestults(path):
     with open(fName, 'rb') as f:
         kargs = pickle.load(f)
     kargs['odir'] = path # In case the path has been changed
-    circ = circumbinary(**kargs)
+    circ = Circumbinary(**kargs)
     circ.loadTimesList()
     iMax = circ.times.argmax()
     fMax = os.path.join(path, circ.files[iMax])
@@ -243,7 +243,7 @@ def loadRestults(path):
 def run(**kargs):
     tmax = kargs.get('tmax')
     kargs.pop('tmax')
-    circ = circumbinary(**kargs) 
+    circ = Circumbinary(**kargs) 
     with open(circ.odir+'/init.pkl', 'wb') as f:
         pickle.dump(kargs, f)
     while circ.t < tmax:
