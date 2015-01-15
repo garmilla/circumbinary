@@ -7,8 +7,10 @@ Created on Wed Jan  7 14:02:28 2015
 
 import numpy as np
 from scipy.optimize import brentq
+from scipy.interpolate import RectBivariateSpline
 
 from constants import *
+from utils import pickle_results
 
 def lam(r, q, f):
     return f*q**2*G*M/a*(a/(r-a))**4
@@ -50,6 +52,7 @@ def Tfin(Tcheck, r, Sigma, q, f):
         else:
             return brentq(func2,1,204,args=(r,Sigma,q,f))
 
+@pickle_results("tempTable.pkl")
 def buildTempTable(rGrid, q=1.0, f=0.01, Tmin=1.0, Tmax=300000, Sigmin=0.1, Sigmax=1500, Sigres=1000):
     """
     Return a table of precomputed temperatures as a function of radius and surface density.
@@ -74,4 +77,15 @@ def buildTempTable(rGrid, q=1.0, f=0.01, Tmin=1.0, Tmax=300000, Sigmin=0.1, Sigm
         for j, Sigma in enumerate(SigmaGrid):
             Tcheck = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f))
             temp[i,j] = Tfin(Tcheck, r, Sigma, q, f)
-    return temp
+    # Return values in logspace for interpolation
+    return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
+
+@pickle_results("interpolator.pkl")
+def buildInterpolator(circ, **kargs):
+    # Keep in mind that buildTemopTable() returns the log10's of the values
+    rGrid, SigmaGrid, temp = buildTempTable(circ.r*a*circ.gamma, q=circ.q, f=circ.fudge, **kargs)
+    # Go back to dimensionless units
+    rGrid -= np.log10(a*circ.gamma)
+    SigmaGrid -= np.log10(circ.mDisk*M/circ.gamma**2/a**2)
+    # Interpolate in the log of dimensionless units
+    return RectBivariateSpline(rGrid, SigmaGrid, temp)

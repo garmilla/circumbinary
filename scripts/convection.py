@@ -6,11 +6,15 @@ import numpy as np
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
 
+#from thermopy import buildTempTable
+import thermopy
 from constants import *
+from utils import pickle_results
 
 class circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-2, q=1.0, gamma=100, mDisk=0.1, odir='output'):
+                 nsweep=10, titer=10, fudge=1.0e-2, q=1.0, gamma=100, mDisk=0.1, odir='output',
+                 bellLin=True, **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -38,6 +42,16 @@ class circumbinary(object):
         self._genT()
         self._genVr()
         self._buildEq()
+        if bellLin:
+            # Pass the radial grid in phsyical units
+            # Get back interpolator in logarithmic space
+            log10Interp = thermopy.buildInterpolator(self, **kargs)
+            # Define callable function T(Sigma)
+            rGrid = np.log10(self.r)
+            def func(Sigma):
+                return np.power(10.0, log10Interp.ev(rGrid, np.log10(Sigma)))
+            # Store interpolator as an instance method
+            self.bellLin = func
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -70,7 +84,7 @@ class circumbinary(object):
         self.LambdaCell = CellVariable(name='Torque at cell centers', mesh=self.mesh)
         LambdaArr = np.zeros(self.rF.shape)
         LambdaArr[1:] = self.chi*np.power(1.0/(self.rF[1:]*self.gamma-1.0), 4)
-        LambdaArr[self.gap] = 0.0; LambdaArr[self.gap] = LambdaArr.max()
+        #LambdaArr[self.gap] = 0.0; LambdaArr[self.gap] = LambdaArr.max()
         self.Lambda.setValue(LambdaArr)
         self.LambdaCell.setValue(self.chi*np.power(1.0/(self.r*self.gamma-1.0), 4))
         self.LambdaCell[np.where(self.LambdaCell > LambdaArr.max())] = LambdaArr.max()
@@ -131,12 +145,12 @@ class circumbinary(object):
         if emptyDt:
             vr = self.vrVisc.value[0] + self.vrTid.value[0]
             #vr[np.where(self.Sigma.value)] = self.delta
-            flux = self.rF[1:]*vr[1:]-self.rF[:-1]*vr[:-1]
-            flux = np.maximum(flux, self.delta)
-            dts = self.mesh.cellVolumes/(flux)
-            dts[np.where(self.Sigma.value == 0.0)] = np.inf
-            #dts[self.gap] = np.inf
-            self.dt = 0.5*np.amin(dts)
+            self.flux = self.rF[1:]*vr[1:]-self.rF[:-1]*vr[:-1]
+            self.flux = np.maximum(self.flux, self.delta)
+            self.dts = self.mesh.cellVolumes/(self.flux)
+            self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
+            self.dts[self.gap] = np.inf
+            self.dt = 0.5*np.amin(self.dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
