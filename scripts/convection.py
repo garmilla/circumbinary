@@ -33,6 +33,7 @@ class Circumbinary(object):
         self.nu0 = nu0
         self.t = 0.0
         self.odir = odir
+        self.bellLin = bellLin
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -48,8 +49,15 @@ class Circumbinary(object):
             log10Interp = thermopy.buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
             # Define callable function T(Sigma)
             rGrid = np.log10(self.r)
-            def func(Sigma):
-                return np.power(10.0, log10Interp.ev(rGrid, np.log10(Sigma)))
+            r = self.r*a*self.gamma #In physical units (cgs)
+            Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+            # Define wrapper function that uses the interpolator and stores the results
+            # in an array given as a second argument. It can handle zero or negative
+            # Sigma values.
+            def func(Sigma, T):
+                good = np.where(Sigma > 0.0); bad = np.where(Sigma <= 0.0)
+                T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
+                T[bad] = Ti[bad]
             # Store interpolator as an instance method
             self.bellLin = func
 
