@@ -45,7 +45,7 @@ class Circumbinary(object):
         if bellLin:
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
-            log10Interp = thermopy.buildInterpolator(self, **kargs)
+            log10Interp = thermopy.buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
             # Define callable function T(Sigma)
             rGrid = np.log10(self.r)
             def func(Sigma):
