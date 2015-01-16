@@ -12,7 +12,7 @@ from constants import *
 from utils import pickle_results
 
 class Circumbinary(object):
-    def __init__(self, rmax=1.0e2, ncell=100, nstep=100, dt=1.0e-6, delta=1.0e-100,
+    def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-2, q=1.0, gamma=100, mDisk=0.1, odir='output',
                  bellLin=True, **kargs):
         self.rmax = rmax
@@ -169,7 +169,7 @@ class Circumbinary(object):
             self.dts = self.mesh.cellVolumes/(self.flux)
             self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
             self.dts[self.gap] = np.inf
-            self.dt = 0.5*np.amin(self.dts)
+            self.dt = 0.1*np.amin(self.dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
@@ -206,6 +206,8 @@ class Circumbinary(object):
             t, Sigma = pickle.load(f)
         self.t = t
         self.Sigma.setValue(Sigma)
+        if self.bellLin:
+            self._bellLinUpdate()
 
     def loadTimesList(self):
         path = self.odir

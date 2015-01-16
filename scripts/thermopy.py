@@ -52,7 +52,7 @@ def Tfin(Tcheck, r, Sigma, q, f):
         else:
             return brentq(func2,1,204,args=(r,Sigma,q,f))
 
-def buildTempTable(rGrid, q=1.0, f=0.01, Tmin=1.0, Tmax=300000, Sigmin=0.1, Sigmax=1500, Sigres=1000):
+def buildTempTable(rGrid, q=1.0, f=0.01, Tmin=1.0, Tmax=500000, Sigmin=0.1, Sigmax=1500, Sigres=1000):
     """
     Return a table of precomputed temperatures as a function of radius and surface density.
 
