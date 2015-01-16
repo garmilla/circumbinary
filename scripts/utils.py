@@ -1,7 +1,8 @@
 #This code was copied from the astroML package
 #https://github.com/astroML/astroML/blob/master/astroML/decorators.py 
-import numpy as np
 import pickle
+import numpy as np
+import matplotlib.pyplot as plt
 
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
@@ -97,3 +98,39 @@ def pickle_results(filename=None, verbose=True):
             return retval
         return new_f
     return pickle_func
+
+_colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
+def plotSTF(circ, xlim=None, times=None):
+    """
+    Plot panel with Sigma, temperature, and FJ
+    """
+    fig = plt.figure()
+
+    if times==None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), 4)
+        print "You didn't specify times, I'll plot the times: {0}".format(times)
+
+    if xlim==None:
+        xlim=(circ.r[0], 1.0e3*circ.r[0])
+
+    axSigma = plt.subplot(3, 1, 1)
+    axT = plt.subplot(3, 1, 2)
+    axFJ = plt.subplot(3, 1, 3)
+
+    axSigma.set_ylabel("Sigma")
+    axT.set_ylabel("T")
+    axFJ.set_ylabel("FJ")
+    axFJ.set_xlabel("r/r0")
+
+    axSigma.set_xlim(xlim)
+    axT.set_xlim(xlim)
+    axFJ.set_xlim(xlim)
+
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        axSigma.semilogx(circ.r, circ.Sigma.value, color=_colors[i])
+        axT.semilogx(circ.r, circ.T.value, color=_colors[i])
+        FJ = 3*np.pi*circ.nu*circ.Sigma.value*np.sqrt(circ.r)
+        axFJ.semilogx(circ.r, FJ.value, color=_colors[i])
+
+    return fig
