@@ -153,7 +153,7 @@ class Circumbinary(object):
         """
         Update the temperature using the Bell & Lin opacities
         """
-        self._bellLinT(self.dimensionalSigma(), self._T)
+        self._bellLinT(self.Sigma.value, self._T)
         self.T.setValue(self._T)
 
     def dimensionalSigma(self):
