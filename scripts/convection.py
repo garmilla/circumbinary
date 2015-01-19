@@ -80,7 +80,8 @@ class Circumbinary(object):
         # Gaussian initial condition
         value = self.mDisk*M/np.sqrt(2*np.pi)/(self.gamma*a*width)*\
                 np.exp(-0.5*np.square(self.r-1.0)/width**2)/(2*np.pi*self.gamma*self.r*a)
-        value /= M/(self.gamma*a)**2
+        # Make it dimensionless
+        value /= self.mDisk*M/(self.gamma*a)**2
         idxs = np.where(self.r < 0.1)
         value[idxs] = 0.0
         value = tuple(value)
@@ -152,8 +153,14 @@ class Circumbinary(object):
         """
         Update the temperature using the Bell & Lin opacities
         """
-        self._bellLinT(self.Sigma.value, self._T)
+        self._bellLinT(self.dimensionalSigma(), self._T)
         self.T.setValue(self._T)
+
+    def dimensionalSigma(self):
+        """
+        Return Sigma in dimensional form (cgs)
+        """
+        return self.Sigma.value*self.mDisk*M/(self.gamma*a)**2
 
     def singleTimestep(self, dt=None, update=True, emptyDt=False):
         """
@@ -169,7 +176,7 @@ class Circumbinary(object):
             self.dts = self.mesh.cellVolumes/(self.flux)
             self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
             self.dts[self.gap] = np.inf
-            self.dt = 0.1*np.amin(self.dts)
+            self.dt = 0.05*np.amin(self.dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
