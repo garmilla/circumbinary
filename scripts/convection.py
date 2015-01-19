@@ -219,6 +219,8 @@ class Circumbinary(object):
     def loadTimesList(self):
         path = self.odir
         files = os.listdir(path)
+        if files[0] == '.DS_Store':
+            files = files[1:]
         self.times = np.zeros((len(files)-1,))
         for i, f in enumerate(files[1:]):
             match = re.match(r"^t((\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\.pkl", f)
