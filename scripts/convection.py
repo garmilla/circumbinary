@@ -49,19 +49,19 @@ class Circumbinary(object):
             r = self.r*a*self.gamma #In physical units (cgs)
             self.Omega = np.sqrt(G*M/r**3)
             Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-            self._T = np.zeros(Ti.shape)
-            self.T = CellVariable(name='Temperature',
-                                 mesh=self.mesh, hasOld=True, value=Ti)
+            T = np.zeros(Ti.shape)
             # Define wrapper function that uses the interpolator and stores the results
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
-            def func(Sigma, T):
+            def func(Sigma):
                 good = np.where(Sigma > 0.0); bad = np.where(Sigma <= 0.0)
                 T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
                 T[bad] = Ti[bad]
+                return T
             # Store interpolator as an instance method
             self._bellLinT = func
-            self._bellLinUpdate()
+            # Save the temperature as an operator variable
+            self.T = self.Sigma._UnaryOperatorVariable(lambda a: self._bellLinT(a))
         else:
             self._genT()
         self._genVr()
@@ -149,13 +149,6 @@ class Circumbinary(object):
         # The current scheme is an implicit-upwind
         self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
 
-    def _bellLinUpdate(self):
-        """
-        Update the temperature using the Bell & Lin opacities
-        """
-        self._bellLinT(self.Sigma.value, self._T)
-        self.T.setValue(self._T)
-
     def dimensionalSigma(self):
         """
         Return Sigma in dimensional form (cgs)
@@ -180,8 +173,6 @@ class Circumbinary(object):
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
-                if self.bellLin:
-                    self._bellLinUpdate()
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
@@ -213,8 +204,6 @@ class Circumbinary(object):
             t, Sigma = pickle.load(f)
         self.t = t
         self.Sigma.setValue(Sigma)
-        if self.bellLin:
-            self._bellLinUpdate()
 
     def loadTimesList(self):
         path = self.odir
@@ -254,7 +243,7 @@ def loadResults(path):
 def run(**kargs):
     tmax = kargs.get('tmax')
     kargs.pop('tmax')
-    circ = Circumbinary(**kargs) 
+    circ = Circumbinary(**kargs)
     with open(circ.odir+'/init.pkl', 'wb') as f:
         pickle.dump(kargs, f)
     while circ.t < tmax:
