@@ -52,7 +52,7 @@ def Tfin(Tcheck, r, Sigma, q, f):
         else:
             return brentq(func2,1,204,args=(r,Sigma,q,f))
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1.0, Tmax=500000, Sigmin=1.0e-3, Sigmax=1500, Sigres=1000):
+def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1.0, Tmax=500000, Sigmin=1.0e-5, Sigmax=1500, Sigres=2000):
     """
     Return a table of precomputed temperatures as a function of radius and surface density.
 
@@ -86,5 +86,7 @@ def buildInterpolator(r, gamma, q, fudge, mDisk, **kargs):
     # Go back to dimensionless units
     rGrid -= np.log10(a*gamma)
     SigmaGrid -= np.log10(mDisk*M/gamma**2/a**2)
+    # Get the range of values for Sigma in the table
+    rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
     # Interpolate in the log of dimensionless units
-    return RectBivariateSpline(rGrid, SigmaGrid, temp)
+    return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)

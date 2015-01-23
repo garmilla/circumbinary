@@ -43,9 +43,10 @@ class Circumbinary(object):
         if bellLin:
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
-            log10Interp = thermopy.buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
-            # Define callable function T(Sigma)
+            rangeSigma, log10Interp = thermopy.buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
             rGrid = np.log10(self.r)
+            SigmaMin = np.ones(rGrid.shape)*rangeSigma[0]
+            SigmaMax = np.ones(rGrid.shape)*rangeSigma[1]
             r = self.r*a*self.gamma #In physical units (cgs)
             self.Omega = np.sqrt(G*M/r**3)
             Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
@@ -54,9 +55,12 @@ class Circumbinary(object):
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
             def func(Sigma):
-                good = np.where(Sigma > 0.0); bad = np.where(Sigma <= 0.0)
+                good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
+                badMin = np.logical_and(True, Sigma < rangeSigma[0])
+                badMax = np.logical_and(True, Sigma > rangeSigma[1])
                 T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
-                T[bad] = Ti[bad]
+                T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
+                T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
                 return T
             # Store interpolator as an instance method
             self._bellLinT = func
