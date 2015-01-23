@@ -58,14 +58,17 @@ class Circumbinary(object):
                 good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
                 badMin = np.logical_and(True, Sigma < rangeSigma[0])
                 badMax = np.logical_and(True, Sigma > rangeSigma[1])
-                T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
-                T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
-                T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
+                if np.sum(good) > 0:
+                    T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
+                if np.sum(badMin) > 0:
+                    T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
+                if np.sum(badMax) > 0:
+                    T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
                 return T
             # Store interpolator as an instance method
             self._bellLinT = func
             # Save the temperature as an operator variable
-            self.T = self.Sigma._UnaryOperatorVariable(lambda a: self._bellLinT(a))
+            self.T = self.Sigma._UnaryOperatorVariable(lambda x: self._bellLinT(x))
         else:
             self._genT()
         self._genVr()
@@ -139,7 +142,7 @@ class Circumbinary(object):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
-        self.nu = alpha*k*self.T/mu/self.Omega/self.nu0
+        self.nu = alpha*k/mu/self.Omega/self.nu0*self.T
         self.visc = r**0.5*self.nu*self.Sigma
         # I add the delta to avoid divisions by zero
         self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
