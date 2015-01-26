@@ -14,7 +14,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1, odir='output',
-                 bellLin=True, **kargs):
+                 bellLin=True, emptydt=0.05, **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -34,6 +34,7 @@ class Circumbinary(object):
         self.t = 0.0
         self.odir = odir
         self.bellLin = bellLin
+        self.emptydt = emptydt
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -176,7 +177,7 @@ class Circumbinary(object):
             self.dts = self.mesh.cellVolumes/(self.flux)
             self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
             self.dts[self.gap] = np.inf
-            self.dt = 0.05*np.amin(self.dts)
+            self.dt = self.emptydt*np.amin(self.dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
@@ -272,6 +273,8 @@ if __name__ == '__main__':
                         help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
+    parser.add_argument('--emptydt', default=0.05, type=float,
+                        help='Factor to use when using the emptyDt=True option')
     parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')
     parser.add_argument('--odir', default='output', type=str,
