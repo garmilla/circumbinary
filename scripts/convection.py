@@ -13,7 +13,7 @@ from utils import pickle_results
 
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1, odir='output',
+                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
                  bellLin=True, emptydt=0.05, **kargs):
         self.rmax = rmax
         self.ncell = ncell
@@ -22,7 +22,7 @@ class Circumbinary(object):
         self.delta = delta
         self.nsweep = nsweep
         self.titer = titer
-        self.mDisk = mDisk
+        self.mDisk = mdisk
         Omega0 = (G*M/(gamma*a)**3)**0.5
         nu0 = alpha*cs**2/Omega0
         self.chi = 2*fudge*q**2*np.sqrt(G*M)/nu0/a*(gamma*a)**1.5
@@ -273,6 +273,10 @@ if __name__ == '__main__':
                         help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
+    parser.add_argument('--fudge', default=0.001, type=float,
+                        help='Fudge factor that the torque term is proportional to')
+    parser.add_argument('--mdisk', default=0.1, type=float,
+                        help='Total mass of the disk in units of central binary mass.')
     parser.add_argument('--emptydt', default=0.05, type=float,
                         help='Factor to use when using the emptyDt=True option')
     parser.add_argument('--delta', default=1.0e-100, type=float,
