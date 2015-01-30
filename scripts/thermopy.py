@@ -7,7 +7,6 @@ Created on Wed Jan  7 14:02:28 2015
 
 import numpy as np
 from scipy.optimize import brentq
-from scipy.interpolate import RectBivariateSpline
 
 from constants import *
 

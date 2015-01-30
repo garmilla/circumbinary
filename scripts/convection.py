@@ -3,6 +3,7 @@ import re
 import argparse
 import pickle
 import numpy as np
+from scipy.interpolate import RectBivariateSpline
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
 
