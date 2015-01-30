@@ -41,9 +41,20 @@ class Circumbinary(object):
         self._genSigma()
         self._genTorque()
         if bellLin:
+            @pickle_results(os.path.join(self.odir, "interpolator.pkl"))
+            def buildInterpolator(r, gamma, q, fudge, mDisk, **kargs):
+                # Keep in mind that buildTemopTable() returns the log10's of the values
+                rGrid, SigmaGrid, temp = thermopy.buildTempTable(r*a*gamma, q=q, f=fudge, **kargs)
+                # Go back to dimensionless units
+                rGrid -= np.log10(a*gamma)
+                SigmaGrid -= np.log10(mDisk*M/gamma**2/a**2)
+                # Get the range of values for Sigma in the table
+                rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
+                # Interpolate in the log of dimensionless units
+                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
-            rangeSigma, log10Interp = thermopy.buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
+            rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
             rGrid = np.log10(self.r)
             SigmaMin = np.ones(rGrid.shape)*rangeSigma[0]
             SigmaMax = np.ones(rGrid.shape)*rangeSigma[1]

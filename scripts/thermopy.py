@@ -10,7 +10,6 @@ from scipy.optimize import brentq
 from scipy.interpolate import RectBivariateSpline
 
 from constants import *
-from utils import pickle_results
 
 def lam(r, q, f):
     return f*q**2*G*M/a*(a/(r-a))**4
@@ -78,15 +77,3 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1.0, Tmax=500000, Sigmin=1.0e-5, 
             temp[i,j] = Tfin(Tcheck, r, Sigma, q, f)
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
-
-@pickle_results("interpolator.pkl")
-def buildInterpolator(r, gamma, q, fudge, mDisk, **kargs):
-    # Keep in mind that buildTemopTable() returns the log10's of the values
-    rGrid, SigmaGrid, temp = buildTempTable(r*a*gamma, q=q, f=fudge, **kargs)
-    # Go back to dimensionless units
-    rGrid -= np.log10(a*gamma)
-    SigmaGrid -= np.log10(mDisk*M/gamma**2/a**2)
-    # Get the range of values for Sigma in the table
-    rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
-    # Interpolate in the log of dimensionless units
-    return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
