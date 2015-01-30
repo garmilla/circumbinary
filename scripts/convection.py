@@ -13,8 +13,8 @@ from utils import pickle_results
 
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mDisk=0.1, odir='output',
-                 bellLin=True, **kargs):
+                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
+                 bellLin=True, emptydt=0.05, **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -22,7 +22,7 @@ class Circumbinary(object):
         self.delta = delta
         self.nsweep = nsweep
         self.titer = titer
-        self.mDisk = mDisk
+        self.mDisk = mdisk
         Omega0 = (G*M/(gamma*a)**3)**0.5
         nu0 = alpha*cs**2/Omega0
         self.chi = 2*fudge*q**2*np.sqrt(G*M)/nu0/a*(gamma*a)**1.5
@@ -34,6 +34,7 @@ class Circumbinary(object):
         self.t = 0.0
         self.odir = odir
         self.bellLin = bellLin
+        self.emptydt = emptydt
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -69,14 +70,17 @@ class Circumbinary(object):
                 good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
                 badMin = np.logical_and(True, Sigma < rangeSigma[0])
                 badMax = np.logical_and(True, Sigma > rangeSigma[1])
-                T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
-                T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
-                T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
+                if np.sum(good) > 0:
+                    T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
+                if np.sum(badMin) > 0:
+                    T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
+                if np.sum(badMax) > 0:
+                    T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
                 return T
             # Store interpolator as an instance method
             self._bellLinT = func
             # Save the temperature as an operator variable
-            self.T = self.Sigma._UnaryOperatorVariable(lambda a: self._bellLinT(a))
+            self.T = self.Sigma._UnaryOperatorVariable(lambda x: self._bellLinT(x))
         else:
             self._genT()
         self._genVr()
@@ -150,7 +154,7 @@ class Circumbinary(object):
         """Generate the face variable that stores the velocity values"""
         r = self.r #In dimensionless units (cgs)
         # viscosity at cell centers in cgs
-        self.nu = alpha*k*self.T/mu/self.Omega/self.nu0
+        self.nu = alpha*k/mu/self.Omega/self.nu0*self.T
         self.visc = r**0.5*self.nu*self.Sigma
         # I add the delta to avoid divisions by zero
         self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
@@ -184,7 +188,7 @@ class Circumbinary(object):
             self.dts = self.mesh.cellVolumes/(self.flux)
             self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
             self.dts[self.gap] = np.inf
-            self.dt = 0.05*np.amin(self.dts)
+            self.dt = self.emptydt*np.amin(self.dts)
         try:
             for i in range(self.nsweep):
                 res = self.eq.sweep(dt=self.dt)
@@ -280,6 +284,12 @@ if __name__ == '__main__':
                         help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
+    parser.add_argument('--fudge', default=0.001, type=float,
+                        help='Fudge factor that the torque term is proportional to')
+    parser.add_argument('--mdisk', default=0.1, type=float,
+                        help='Total mass of the disk in units of central binary mass.')
+    parser.add_argument('--emptydt', default=0.05, type=float,
+                        help='Factor to use when using the emptyDt=True option')
     parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')
     parser.add_argument('--odir', default='output', type=str,
