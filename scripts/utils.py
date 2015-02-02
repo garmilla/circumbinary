@@ -100,14 +100,14 @@ def pickle_results(filename=None, verbose=True):
     return pickle_func
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
-def plotSTF(circ, xlim=None, times=None):
+def plotSTF(circ, xlim=None, times=None, nTimes=4):
     """
     Plot panel with Sigma, temperature, and FJ
     """
     fig = plt.figure()
 
     if times==None:
-        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), 4)
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
         print "You didn't specify times, I'll plot the times: {0}".format(times)
 
     if xlim==None:
