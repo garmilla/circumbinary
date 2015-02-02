@@ -228,17 +228,18 @@ class Circumbinary(object):
     def loadTimesList(self):
         path = self.odir
         files = os.listdir(path)
-        if files[0] == '.DS_Store':
-            files = files[1:]
-        if files[0] == 'init.pkl':
-            files = files[1:]
-        if files[0] == 'interpolator.pkl':
-            files = files[1:]
+        if '.DS_Store' in files:
+            files.remove('.DS_Store')
+        if 'interpolator.pkl' in files:
+            files.remove('interpolator.pkl')
+        if 'init.pkl' in files:
+            files.remove('init.pkl')
         self.times = np.zeros((len(files),))
         for i, f in enumerate(files):
             match = re.match(r"^t((\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\.pkl", f)
             if match == None:
                 print "WARNING: File {0} has an unexepected name".format(f)
+                files.remove(f)
                 continue
             self.times[i] = float(match.group(1))
         self.files = files
