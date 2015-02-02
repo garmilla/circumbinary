@@ -268,9 +268,26 @@ def loadResults(path):
 def run(**kargs):
     tmax = kargs.get('tmax')
     kargs.pop('tmax')
-    circ = Circumbinary(**kargs)
-    with open(circ.odir+'/init.pkl', 'wb') as f:
-        pickle.dump(kargs, f)
+    fName = os.path.join(kargs['odir'], 'init.pkl')
+    if os.path.isfile(fName):
+        with open(fName, 'rb') as f:
+            kargsPrev = pickle.load(f)
+        equal = True
+        for k in kargs:
+            if not kargs[k] == kargsPrev[k]:
+                equal = False
+        for k in kargsPrev:
+            if not kargs[k] == kargsPrev[k]:
+                equal = False
+        if not equal:
+            raise ValueError("The parameters you typed are different from the parameters in the previous run")
+        else:
+           print "I found data in this folder, I'll resume from the last snapshot" 
+           circ = loadResults(kargs['odir'])
+    else:
+        circ = Circumbinary(**kargs)
+        with open(circ.odir+'/init.pkl', 'wb') as f:
+            pickle.dump(kargs, f)
     while circ.t < tmax:
         circ.evolve(emptyDt=True)
         circ.writeToFile()
