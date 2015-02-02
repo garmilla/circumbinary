@@ -280,7 +280,7 @@ def run(**kargs):
             if not kargs[k] == kargsPrev[k]:
                 equal = False
         if not equal:
-            raise ValueError("The parameters you typed are different from the parameters in the previous run")
+            raise ValueError("The parameters you typed are different from the parameters in the previous run\n The parameters were {0}".format(kargsPrev))
         else:
            print "I found data in this folder, I'll resume from the last snapshot" 
            circ = loadResults(kargs['odir'])
