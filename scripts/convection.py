@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import RectBivariateSpline
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
-from fipy.steppers import sweepMonotonic, PseudoRKQSStepper
+from fipy.steppers import sweepMonotonic, PseudoRKQSStepper, pidStepper
 
 #from thermopy import buildTempTable
 import thermopy
@@ -16,7 +16,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.05, stepper='rkqss', **kargs):
+                 bellLin=True, emptydt=0.05, stepper='pid', **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -90,6 +90,9 @@ class Circumbinary(object):
         if stepper == 'rkqss':
             vardata = ((self.Sigma, self.eq, None),)
             self.stepper = PseudoRKQSStepper(vardata=vardata)
+        if stepper == 'pid':
+            vardata = ((self.Sigma, self.eq, None),)
+            self.stepper = pidStepper.PIDStepper(vardata=vardata)
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -213,7 +216,7 @@ class Circumbinary(object):
         """
         Evolve the system using a FiPy stepper
         """
-        self.stepper.step(dt, sweepFn=self.sweepFn)
+        self.stepper.step(dt, sweepFn=self.sweepFn, dtMin=self.delta)
         self.t += dt
 
     def evolve(self, **kargs):
