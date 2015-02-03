@@ -106,7 +106,7 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4):
     """
     fig = plt.figure()
 
-    if times==None:
+    if times == None:
         times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
         print "You didn't specify times, I'll plot the times: {0}".format(times)
 
@@ -128,9 +128,9 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4):
 
     for i, t in enumerate(times):
         circ.loadTime(t)
-        axSigma.semilogx(circ.r, circ.Sigma.value, color=_colors[i])
-        axT.semilogx(circ.r, circ.T.value, color=_colors[i])
+        axSigma.semilogx(circ.r, circ.Sigma.value, color=_colors[i%7])
+        axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
         FJ = 3*np.pi*circ.nu*circ.Sigma.value*np.sqrt(circ.r)
-        axFJ.semilogx(circ.r, FJ.value, color=_colors[i])
+        axFJ.semilogx(circ.r, FJ.value, color=_colors[i%7])
 
     return fig
