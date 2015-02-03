@@ -6,6 +6,7 @@ import numpy as np
 from scipy.interpolate import RectBivariateSpline
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
+from fipy.steppers import sweepMonotonic, PseudoRKQSStepper
 
 #from thermopy import buildTempTable
 import thermopy
@@ -15,7 +16,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.05, **kargs):
+                 bellLin=True, emptydt=0.05, stepper='rkqss', **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -86,6 +87,9 @@ class Circumbinary(object):
             self._genT()
         self._genVr()
         self._buildEq()
+        if stepper == 'rkqss':
+            vardata = ((self.Sigma, self.eq, None),)
+            self.stepper = PseudoRKQSStepper(vardata=vardata)
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -191,18 +195,30 @@ class Circumbinary(object):
             self.dts[self.gap] = np.inf
             self.dt = self.emptydt*np.amin(self.dts)
         try:
-            for i in range(self.nsweep):
-                res = self.eq.sweep(dt=self.dt)
+            res = sweepMonotonic(self.eq.sweep, dt=self.dt)
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
 
+    def sweepFn(vardata, dt, *args, **kwargs):
+        residual = 0          
+        for var, eqn, bcs in vardata:  
+            residual = max(residual, sweepMonotonic(eqn.sweep, dt=dt))
+        return residual       
+    sweepFn = staticmethod(sweepFn)
+                              
+    def step(self, dt):
+        """
+        Evolve the system using a FiPy stepper
+        """
+        self.stepper.step(dt, sweepFn=self.sweepFn)
+        self.t += dt
+
     def evolve(self, **kargs):
         """
-        Evolve the system according to the values in its initialization
-        self.dt, self.nstep, and self.nsweep
+        Evolve the system using the singleTimestep method
         """
         for i in range(self.nstep):
             self.singleTimestep(**kargs)
@@ -267,7 +283,11 @@ def loadResults(path):
 
 def run(**kargs):
     tmax = kargs.get('tmax')
+    stepper = kargs.get('stepper')
+    dstep = kargs.get('dstep')
     kargs.pop('tmax')
+    kargs.pop('stepper')
+    kargs.pop('dstep')
     fName = os.path.join(kargs['odir'], 'init.pkl')
     if os.path.isfile(fName):
         with open(fName, 'rb') as f:
@@ -289,7 +309,10 @@ def run(**kargs):
         with open(circ.odir+'/init.pkl', 'wb') as f:
             pickle.dump(kargs, f)
     while circ.t < tmax:
-        circ.evolve(emptyDt=True)
+        if stepper:
+            circ.step(dstep)
+        else:
+            circ.evolve(emptyDt=True)
         circ.writeToFile()
 
 if __name__ == '__main__':
@@ -319,5 +342,9 @@ if __name__ == '__main__':
                         help='Directory where results are saved to')
     parser.add_argument('--tmax', default=3.0, type=float,
                         help='Maximum time to evolve the model to')
+    parser.add_argument('--stepper', default=True, type=bool,
+                        help='If true use a FiPy stepper to evolve the system')
+    parser.add_argument('--dstep', default=0.001, type=float,
+                        help='If `stepper`, intervals at which the stepper saves the present state')
     kargs = vars(parser.parse_args())
     run(**kargs)
