@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 
-from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExponentialConvectionTerm
+from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExplicitUpwindConvectionTerm
 from fipy.steppers import sweepMonotonic, PseudoRKQSStepper, pidStepper
 
 #from thermopy import buildTempTable
@@ -16,7 +16,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.01, stepper='rkqss', **kargs):
+                 bellLin=True, emptydt=0.01, stepper='rkqss', sweeper=False, **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -37,6 +37,7 @@ class Circumbinary(object):
         self.odir = odir
         self.bellLin = bellLin
         self.emptydt = emptydt
+        self.sweeper = sweeper
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
@@ -174,7 +175,7 @@ class Circumbinary(object):
         schemes, e.g. Crank-Nicholson.
         """
         # The current scheme is an implicit-upwind
-        self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
+        self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
 
     def dimensionalSigma(self):
         """
@@ -198,7 +199,10 @@ class Circumbinary(object):
             self.dts[self.gap] = np.inf
             self.dt = self.emptydt*np.amin(self.dts)
         try:
-            res = sweepMonotonic(self.eq.sweep, dt=self.dt)
+            if sweeper:
+                res = sweepMonotonic(self.eq.sweep, dt=self.dt)
+            else:
+                self.eq.sweep(dt=self.dt)
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
@@ -261,6 +265,7 @@ class Circumbinary(object):
                 files.remove(f)
                 continue
             self.times[i] = float(match.group(1))
+        self.times.sort()
         self.files = files
 
     def loadTime(self, t):
@@ -347,6 +352,8 @@ if __name__ == '__main__':
                         help='Maximum time to evolve the model to')
     parser.add_argument('--stepper', default=False, type=bool,
                         help='If true use a FiPy stepper to evolve the system')
+    parser.add_argument('--sweeper', default=False, type=bool,
+                        help='If true use a FiPy sweeper to evolve the system')
     parser.add_argument('--dstep', default=0.001, type=float,
                         help='If `stepper`, intervals at which the stepper saves the present state')
     kargs = vars(parser.parse_args())
