@@ -16,7 +16,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
                  nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.05, stepper='pid', **kargs):
+                 bellLin=True, emptydt=0.01, stepper='rkqss', **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.nstep = nstep
@@ -337,7 +337,7 @@ if __name__ == '__main__':
                         help='Fudge factor that the torque term is proportional to')
     parser.add_argument('--mdisk', default=0.1, type=float,
                         help='Total mass of the disk in units of central binary mass.')
-    parser.add_argument('--emptydt', default=0.05, type=float,
+    parser.add_argument('--emptydt', default=0.01, type=float,
                         help='Factor to use when using the emptyDt=True option')
     parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')
@@ -345,7 +345,7 @@ if __name__ == '__main__':
                         help='Directory where results are saved to')
     parser.add_argument('--tmax', default=3.0, type=float,
                         help='Maximum time to evolve the model to')
-    parser.add_argument('--stepper', default=True, type=bool,
+    parser.add_argument('--stepper', default=False, type=bool,
                         help='If true use a FiPy stepper to evolve the system')
     parser.add_argument('--dstep', default=0.001, type=float,
                         help='If `stepper`, intervals at which the stepper saves the present state')
