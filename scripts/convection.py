@@ -199,7 +199,7 @@ class Circumbinary(object):
             self.dts[self.gap] = np.inf
             self.dt = self.emptydt*np.amin(self.dts)
         try:
-            if sweeper:
+            if self.sweeper:
                 res = sweepMonotonic(self.eq.sweep, dt=self.dt)
             else:
                 self.eq.sweep(dt=self.dt)
