@@ -6,7 +6,6 @@ import numpy as np
 from scipy.interpolate import RectBivariateSpline
 
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExplicitUpwindConvectionTerm
-from fipy.steppers import sweepMonotonic, PseudoRKQSStepper, pidStepper
 
 #from thermopy import buildTempTable
 import thermopy
@@ -14,16 +13,13 @@ from constants import *
 from utils import pickle_results
 
 class Circumbinary(object):
-    def __init__(self, rmax=1.0e2, ncell=200, nstep=100, dt=1.0e-6, delta=1.0e-100,
-                 nsweep=10, titer=10, fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.01, stepper='rkqss', sweeper=False, **kargs):
+    def __init__(self, rmax=1.0e2, ncell=200, dt=1.0e-6, delta=1.0e-100,
+                 fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
+                 bellLin=True, emptydt=0.01, **kargs):
         self.rmax = rmax
         self.ncell = ncell
-        self.nstep = nstep
         self.dt = dt
         self.delta = delta
-        self.nsweep = nsweep
-        self.titer = titer
         self.mDisk = mdisk
         Omega0 = (G*M/(gamma*a)**3)**0.5
         nu0 = alpha*cs**2/Omega0
@@ -37,63 +33,15 @@ class Circumbinary(object):
         self.odir = odir
         self.bellLin = bellLin
         self.emptydt = emptydt
-        self.sweeper = sweeper
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
         self.gap = np.where(self.rF < 1.7/gamma)
         self._genSigma()
         self._genTorque()
-        if bellLin:
-            @pickle_results(os.path.join(self.odir, "interpolator.pkl"))
-            def buildInterpolator(r, gamma, q, fudge, mDisk, **kargs):
-                # Keep in mind that buildTemopTable() returns the log10's of the values
-                rGrid, SigmaGrid, temp = thermopy.buildTempTable(r*a*gamma, q=q, f=fudge, **kargs)
-                # Go back to dimensionless units
-                rGrid -= np.log10(a*gamma)
-                SigmaGrid -= np.log10(mDisk*M/gamma**2/a**2)
-                # Get the range of values for Sigma in the table
-                rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
-                # Interpolate in the log of dimensionless units
-                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
-            # Pass the radial grid in phsyical units
-            # Get back interpolator in logarithmic space
-            rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
-            rGrid = np.log10(self.r)
-            SigmaMin = np.ones(rGrid.shape)*rangeSigma[0]
-            SigmaMax = np.ones(rGrid.shape)*rangeSigma[1]
-            r = self.r*a*self.gamma #In physical units (cgs)
-            self.Omega = np.sqrt(G*M/r**3)
-            Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-            T = np.zeros(Ti.shape)
-            # Define wrapper function that uses the interpolator and stores the results
-            # in an array given as a second argument. It can handle zero or negative
-            # Sigma values.
-            def func(Sigma):
-                good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
-                badMin = np.logical_and(True, Sigma < rangeSigma[0])
-                badMax = np.logical_and(True, Sigma > rangeSigma[1])
-                if np.sum(good) > 0:
-                    T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
-                if np.sum(badMin) > 0:
-                    T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
-                if np.sum(badMax) > 0:
-                    T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
-                return T
-            # Store interpolator as an instance method
-            self._bellLinT = func
-            # Save the temperature as an operator variable
-            self.T = self.Sigma._UnaryOperatorVariable(lambda x: self._bellLinT(x))
-        else:
-            self._genT()
+        self._genT(bellLin=self.bellLin, **kargs)
         self._genVr()
         self._buildEq()
-        if stepper == 'rkqss':
-            vardata = ((self.Sigma, self.eq, None),)
-            self.stepper = PseudoRKQSStepper(vardata=vardata)
-        if stepper == 'pid':
-            vardata = ((self.Sigma, self.eq, None),)
-            self.stepper = pidStepper.PIDStepper(vardata=vardata)
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -150,14 +98,52 @@ class Circumbinary(object):
         #return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
         return np.power(self.TvThin**4 + self.TvThick**4 + self.Ti**4, 1.0/4)/self.T0
 
-    def _genT(self):
+    def _genT(self, bellLin=True, **kargs):
         """Create a cell variable for temperature"""
+        if bellLin:
+            @pickle_results(os.path.join(self.odir, "interpolator.pkl"))
+            def buildInterpolator(r, gamma, q, fudge, mDisk, **kargs):
+                # Keep in mind that buildTemopTable() returns the log10's of the values
+                rGrid, SigmaGrid, temp = thermopy.buildTempTable(r*a*gamma, q=q, f=fudge, **kargs)
+                # Go back to dimensionless units
+                rGrid -= np.log10(a*gamma)
+                SigmaGrid -= np.log10(mDisk*M/gamma**2/a**2)
+                # Get the range of values for Sigma in the table
+                rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
+                # Interpolate in the log of dimensionless units
+                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
+            # Pass the radial grid in phsyical units
+            # Get back interpolator in logarithmic space
+            rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
+            rGrid = np.log10(self.r)
+            SigmaMin = np.ones(rGrid.shape)*rangeSigma[0]
+            SigmaMax = np.ones(rGrid.shape)*rangeSigma[1]
+            r = self.r*a*self.gamma #In physical units (cgs)
+            self.Omega = np.sqrt(G*M/r**3)
+            Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
+            T = np.zeros(Ti.shape)
+            # Define wrapper function that uses the interpolator and stores the results
+            # in an array given as a second argument. It can handle zero or negative
+            # Sigma values.
+            def func(Sigma):
+                good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
+                badMin = np.logical_and(True, Sigma < rangeSigma[0])
+                badMax = np.logical_and(True, Sigma > rangeSigma[1])
+                if np.sum(good) > 0:
+                    T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
+                if np.sum(badMin) > 0:
+                    T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
+                if np.sum(badMax) > 0:
+                    T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
+                return T
+            # Store interpolator as an instance method
+            self._bellLinT = func
+            # Save the temperature as an operator variable
+            self.T = self.Sigma._UnaryOperatorVariable(lambda x: self._bellLinT(x))
+
         # Initialize T with the interpolation of the various thermodynamic limits
-        #r = self.r*a #In physical units (cgs)
-        #self.Omega = np.sqrt(G*M/r**3)
-        #self.TvThin = np.power(9.0/4*alpha*k/sigma/mu/kappa0*self.Omega, 1.0/(3.0+beta))
-        #self.Ti = np.power(np.square(eta/7*L/4/np.pi/sigma)*k/mu/G/M*r**(-3), 1.0/7)
-        self.T = self._interpT()
+        else:
+            self.T = self._interpT()
 
     def _genVr(self):
         """Generate the face variable that stores the velocity values"""
@@ -183,7 +169,22 @@ class Circumbinary(object):
         """
         return self.Sigma.value*self.mDisk*M/(self.gamma*a)**2
 
-    def singleTimestep(self, dt=None, update=True, emptyDt=False):
+    def dimensionalFJ(self):
+        """
+        Return the viscous torque in dimensional units (cgs)
+        """
+        return 3*np.pi*self.nu*self.nu0*self.dimensionalSigma()*np.sqrt(G*M*self.r*a*self.gamma)
+
+    def dimensionalTime(self, mode='yr'):
+        """
+        Return current time in dimensional units (years or seconds)
+        """
+        if mode == 'yr' or mode == 'years' or mode == 'year':
+            return self.t*(a*self.gamma)**2/self.nu0/(365*24*60*60)
+        else:
+            return self.t*(a*self.gamma)**2/self.nu0
+
+    def singleTimestep(self, dtMax=0.001, dt=None, update=True, emptyDt=False):
         """
         Evolve the system for a single timestep of size `dt`
         """
@@ -198,37 +199,23 @@ class Circumbinary(object):
             self.dts[np.where(self.Sigma.value == 0.0)] = np.inf
             self.dts[self.gap] = np.inf
             self.dt = self.emptydt*np.amin(self.dts)
+        self.dt = min(dtMax, self.dt)
         try:
-            if self.sweeper:
-                res = sweepMonotonic(self.eq.sweep, dt=self.dt)
-            else:
-                self.eq.sweep(dt=self.dt)
+            self.eq.sweep(dt=self.dt)
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
         except FloatingPointError:
             import ipdb; ipdb.set_trace()
 
-    def sweepFn(vardata, dt, *args, **kwargs):
-        residual = 0          
-        for var, eqn, bcs in vardata:  
-            residual = max(residual, sweepMonotonic(eqn.sweep, dt=dt))
-        return residual       
-    sweepFn = staticmethod(sweepFn)
-                              
-    def step(self, dt):
-        """
-        Evolve the system using a FiPy stepper
-        """
-        self.stepper.step(dt, sweepFn=self.sweepFn, dtMin=self.delta)
-        self.t += dt
-
-    def evolve(self, **kargs):
+    def evolve(self, deltaTime, **kargs):
         """
         Evolve the system using the singleTimestep method
         """
-        for i in range(self.nstep):
-            self.singleTimestep(**kargs)
+        tEv = self.t + deltaTime
+        while self.t < tEv:
+            dtMax = tEv - self.t
+            self.singleTimestep(dtMax=dtMax, **kargs)
 
     def revert(self):
         """
@@ -291,10 +278,8 @@ def loadResults(path):
 
 def run(**kargs):
     tmax = kargs.get('tmax')
-    stepper = kargs.get('stepper')
     dstep = kargs.get('dstep')
     kargs.pop('tmax')
-    kargs.pop('stepper')
     kargs.pop('dstep')
     fName = os.path.join(kargs['odir'], 'init.pkl')
     if os.path.isfile(fName):
@@ -316,11 +301,12 @@ def run(**kargs):
         circ = Circumbinary(**kargs)
         with open(circ.odir+'/init.pkl', 'wb') as f:
             pickle.dump(kargs, f)
+    tmax = tmax*365*24*60*60 # Convert time to seconds
+    dstep = dstep*365*24*60*60 # Convert time to seconds
+    tmax = tmax/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
+    dstep = dstep/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
     while circ.t < tmax:
-        if stepper:
-            circ.step(dstep)
-        else:
-            circ.evolve(emptyDt=True)
+        circ.evolve(dstep, emptyDt=True)
         circ.writeToFile()
 
 if __name__ == '__main__':
@@ -330,15 +316,9 @@ if __name__ == '__main__':
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
     parser.add_argument('--ncell', default=200, type=int,
                         help='The number of cells to use in the grid')
-    parser.add_argument('--nstep', default=100, type=int,
-                        help='The number of time steps to do')
-    parser.add_argument('--nsweep', default=10, type=int,
-                        help='The number of sweeps to do')
-    parser.add_argument('--titer', default=10, type=int,
-                        help='The number of temprature iterations')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
-    parser.add_argument('--fudge', default=0.001, type=float,
+    parser.add_argument('--fudge', default=0.002, type=float,
                         help='Fudge factor that the torque term is proportional to')
     parser.add_argument('--mdisk', default=0.1, type=float,
                         help='Total mass of the disk in units of central binary mass.')
@@ -348,13 +328,9 @@ if __name__ == '__main__':
                         help='Small number to add to avoid divisions by zero')
     parser.add_argument('--odir', default='output', type=str,
                         help='Directory where results are saved to')
-    parser.add_argument('--tmax', default=3.0, type=float,
-                        help='Maximum time to evolve the model to')
-    parser.add_argument('--stepper', default=False, type=bool,
-                        help='If true use a FiPy stepper to evolve the system')
-    parser.add_argument('--sweeper', default=False, type=bool,
-                        help='If true use a FiPy sweeper to evolve the system')
-    parser.add_argument('--dstep', default=0.001, type=float,
-                        help='If `stepper`, intervals at which the stepper saves the present state')
+    parser.add_argument('--tmax', default=5.0e6, type=float,
+                        help='Maximum time to evolve the model to in years')
+    parser.add_argument('--dstep', default=5.0e3, type=float,
+                        help='Intervals at which to save snapshots in years')
     kargs = vars(parser.parse_args())
     run(**kargs)

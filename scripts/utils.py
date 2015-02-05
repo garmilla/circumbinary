@@ -128,9 +128,10 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4):
 
     for i, t in enumerate(times):
         circ.loadTime(t)
-        axSigma.semilogx(circ.r, circ.Sigma.value, color=_colors[i%7])
+        Sigma = circ.dimensionalSigma()
+        axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
         axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
-        FJ = 3*np.pi*circ.nu*circ.Sigma.value*np.sqrt(circ.r)
+        FJ = circ.dimensionalFJ()
         axFJ.semilogx(circ.r, FJ.value, color=_colors[i%7])
 
     return fig
