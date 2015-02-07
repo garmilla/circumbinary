@@ -100,7 +100,7 @@ def pickle_results(filename=None, verbose=True):
     return pickle_func
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
-def plotSTF(circ, xlim=None, times=None, nTimes=4):
+def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.001, FMin=1.0e33):
     """
     Plot panel with Sigma, temperature, and FJ
     """
@@ -129,9 +129,13 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4):
     for i, t in enumerate(times):
         circ.loadTime(t)
         Sigma = circ.dimensionalSigma()
-        axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
-        axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
         FJ = circ.dimensionalFJ()
-        axFJ.semilogx(circ.r, FJ.value, color=_colors[i%7])
-
+        if logLog:
+            axSigma.loglog(circ.r, np.maximum(sigMin, Sigma), color=_colors[i%7])
+            axT.loglog(circ.r, circ.T.value, color=_colors[i%7])
+            axFJ.loglog(circ.r, np.maximum(FMin, FJ), color=_colors[i%7])
+        else:
+            axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
+            axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
+            axFJ.semilogx(circ.r, FJ, color=_colors[i%7])
     return fig
