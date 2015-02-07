@@ -5,9 +5,11 @@ import pickle
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 
-from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExplicitUpwindConvectionTerm
+from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExplicitUpwindConvectionTerm,\
+                 ExponentialConvectionTerm, ImplicitSourceTerm, UpwindConvectionTerm
+from fipy.steppers import sweepMonotonic
+from fipy.boundaryConditions import FixedFlux
 
-#from thermopy import buildTempTable
 import thermopy
 from constants import *
 from utils import pickle_results
@@ -36,7 +38,10 @@ class Circumbinary(object):
         self._genGrid()
         self.r = self.mesh.cellCenters.value[0]
         self.rF = self.mesh.faceCenters.value[0]
-        self.gap = np.where(self.rF < 1.7/gamma)
+        if self.q > 0.0:
+            self.gap = np.where(self.rF < 1.7/gamma)
+        else:
+            self.gap = np.where(self.rF < 1.0/gamma)
         self._genSigma()
         self._genTorque()
         self._genT(bellLin=self.bellLin, **kargs)
@@ -66,8 +71,8 @@ class Circumbinary(object):
         # to zero
         self.Sigma = CellVariable(name='Surface density',
                                  mesh=self.mesh, hasOld=True, value=value)
-        self.Sigma.constrain(0, self.mesh.facesLeft)
-        self.Sigma.constrain(0, self.mesh.facesRight)
+        #self.Sigma.constrain(0, self.mesh.facesLeft)
+        #self.Sigma.constrain(0, self.mesh.facesRight)
 
     def _genTorque(self):
         """Generate Torque"""
@@ -151,9 +156,12 @@ class Circumbinary(object):
         # viscosity at cell centers in cgs
         self.nu = alpha*k/mu/self.Omega/self.nu0*self.T
         self.visc = r**0.5*self.nu*self.Sigma
+        #self.visc.grad.constrain([self.visc/2/self.r[0]], self.mesh.facesLeft)
+        #self.Sigma.constrain(self.visc.grad/self.nu*2*self.r**0.5, where=self.mesh.facesLeft)
         # I add the delta to avoid divisions by zero
         self.vrVisc = -3/self.rF**(0.5)/(self.Sigma.faceValue + self.delta)*self.visc.faceGrad
-        self.vrTid = self.Lambda*np.sqrt(self.rF)
+        if self.q > 0.0:
+            self.vrTid = self.Lambda*np.sqrt(self.rF)
 
     def _buildEq(self):
         """
@@ -161,7 +169,21 @@ class Circumbinary(object):
         schemes, e.g. Crank-Nicholson.
         """
         # The current scheme is an implicit-upwind
-        self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vrVisc + self.vrTid, var=self.Sigma)
+        if self.q > 0.0:
+            self.vr = self.vrVisc + self.vrTid
+            self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
+        else:
+            self.vr = self.vrVisc
+            #self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vr, var=self.Sigma)\
+            mask_coeff = (self.mesh.facesLeft * self.mesh.faceNormals).getDivergence()
+            #self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+            eqX = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+                                                   - mask_coeff*3.0/2*self.nu/self.mesh.x*self.Sigma.old
+            #eqI = TransientTerm(var=self.Sigma) == - UpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+            #                                       - ImplicitSourceTerm(coeff=mask_coeff*3.0/2*self.nu/self.mesh.x, var=self.Sigma)
+            self.eq = eqX
+            #self.eq = TransientTerm(var=self.Sigma) == - UpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+            #                                           - ImplicitSourceTerm(coeff=mask_coeff*3.0/2*self.nu/self.mesh.x, var=self.Sigma)
 
     def dimensionalSigma(self):
         """
@@ -173,7 +195,7 @@ class Circumbinary(object):
         """
         Return the viscous torque in dimensional units (cgs)
         """
-        return 3*np.pi*self.nu*self.nu0*self.dimensionalSigma()*np.sqrt(G*M*self.r*a*self.gamma)
+        return 3*np.pi*self.nu.value*self.nu0*self.dimensionalSigma()*np.sqrt(G*M*self.r*a*self.gamma)
 
     def dimensionalTime(self, mode='yr'):
         """
@@ -191,7 +213,9 @@ class Circumbinary(object):
         if dt:
             self.dt = dt
         if emptyDt:
-            vr = self.vrVisc.value[0] + self.vrTid.value[0]
+            vr = self.vr.value[0]
+            if self.q == 0.0:
+                vr[0] = -3.0/2*self.nu.faceValue.value[0]/self.rF[0]
             #vr[np.where(self.Sigma.value)] = self.delta
             self.flux = self.rF[1:]*vr[1:]-self.rF[:-1]*vr[:-1]
             self.flux = np.maximum(self.flux, self.delta)
@@ -201,7 +225,20 @@ class Circumbinary(object):
             self.dt = self.emptydt*np.amin(self.dts)
         self.dt = min(dtMax, self.dt)
         try:
-            self.eq.sweep(dt=self.dt)
+            if self.q > 0.0:
+                self.eq.sweep(dt=self.dt)
+            elif self.q == 0.0:
+                #self.Sigma.constrain(self.visc.grad/self.nu*2*self.r**0.5, where=self.mesh.facesLeft)
+                #bc = FixedFlux(self.mesh.facesLeft, 3.0/2*self.nu.faceValue.value[0]*self.Sigma.faceValue.value[0]/self.rF[0])
+                #self.eq.sweep(dt=self.dt, boundaryConditions=(bc,))
+                self.eq.sweep(dt=self.dt)
+                #res = sweepMonotonic(self.eq.sweep, dt=self.dt)
+                #for i in range(10):
+                #    res = self.eq.sweep(dt=self.dt)
+                #    print res
+                print "t=", self.t, "dt=", self.dt
+            if np.any(self.Sigma.value < 0.0):
+                self.singleTimestep(dt=self.dt/2)
             if update:
                 self.Sigma.updateOld()
             self.t += self.dt
@@ -270,11 +307,13 @@ def loadResults(path):
     kargs['odir'] = path # In case the path has been changed
     circ = Circumbinary(**kargs)
     circ.loadTimesList()
-    iMax = circ.times.argmax()
-    fMax = os.path.join(path, circ.files[iMax])
-    circ.readFromFile(fMax)
+    try:
+        iMax = circ.times.argmax()
+        fMax = os.path.join(path, circ.files[iMax])
+        circ.readFromFile(fMax)
+    except ValueError:
+        pass
     return circ
-
 
 def run(**kargs):
     tmax = kargs.get('tmax')
@@ -305,6 +344,7 @@ def run(**kargs):
     dstep = dstep*365*24*60*60 # Convert time to seconds
     tmax = tmax/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
     dstep = dstep/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
+    #import ipdb; ipdb.set_trace()
     while circ.t < tmax:
         circ.evolve(dstep, emptyDt=True)
         circ.writeToFile()
@@ -318,6 +358,8 @@ if __name__ == '__main__':
                         help='The number of cells to use in the grid')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
+    parser.add_argument('--q', default=1.0, type=float,
+                        help='Binary mass ratio (smaller/bigger).')
     parser.add_argument('--fudge', default=0.002, type=float,
                         help='Fudge factor that the torque term is proportional to')
     parser.add_argument('--mdisk', default=0.1, type=float,
