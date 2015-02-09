@@ -6,6 +6,7 @@ Created on Wed Jan  7 14:02:28 2015
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import brentq
 
 from constants import *
@@ -44,13 +45,16 @@ def Tfin(Tcheck, r, Sigma, q, f):
     if Tcheck > 202.677:
         return Tcheck
     else:
-        return brentq(func1,1,204,args=(r,Sigma,q,f))
-        if 166.81 < brentq(func1,1,204,args=(r,Sigma,q,f)) < 202.677:
-            return brentq(func1,1,204,args=(r,Sigma,q,f))
+        try:
+            T1 =  brentq(func1,166.8099,202.677001,args=(r,Sigma,q,f), maxiter=200)
+        except ValueError:
+            return brentq(func2,1,204,args=(r,Sigma,q,f), maxiter=200)
+        if 166.81 < T1 < 202.677:
+            return T1
         else:
-            return brentq(func2,1,204,args=(r,Sigma,q,f))
+            return brentq(func2,0.01,166.81001,args=(r,Sigma,q,f), maxiter=200)
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1.0, Tmax=500000, Sigmin=1.0e-5, Sigmax=1500, Sigres=2000):
+def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=0.01, Tmax=1.0e17, Sigmin=1.0e-5, Sigmax=1500, Sigres=2000):
     """
     Return a table of precomputed temperatures as a function of radius and surface density.
 
@@ -72,7 +76,7 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1.0, Tmax=500000, Sigmin=1.0e-5, 
     temp = np.zeros((len(rGrid), Sigres)) #create m x n array for temp
     for i, r in enumerate(rGrid):
         for j, Sigma in enumerate(SigmaGrid):
-            Tcheck = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f))
+            Tcheck = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f), maxiter=200)
             temp[i,j] = Tfin(Tcheck, r, Sigma, q, f)
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
