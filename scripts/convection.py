@@ -17,7 +17,7 @@ from utils import pickle_results
 class Circumbinary(object):
     def __init__(self, rmax=1.0e4, ncell=300, dt=1.0e-6, delta=1.0e-100,
                  fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.01, **kargs):
+                 bellLin=True, emptydt=0.001, **kargs):
         self.rmax = rmax
         self.ncell = ncell
         self.dt = dt
@@ -219,10 +219,7 @@ class Circumbinary(object):
             self.dt = self.emptydt*np.amin(self.dts)
         self.dt = min(dtMax, self.dt)
         try:
-            if self.q > 0.0:
-                self.eq.sweep(dt=self.dt)
-            elif self.q == 0.0:
-                self.eq.sweep(dt=self.dt)
+            self.eq.sweep(dt=self.dt)
             if np.any(self.Sigma.value < 0.0):
                 self.singleTimestep(dt=self.dt/2)
             if update:
@@ -330,7 +327,6 @@ def run(**kargs):
     dstep = dstep*365*24*60*60 # Convert time to seconds
     tmax = tmax/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
     dstep = dstep/((a*circ.gamma)**2/circ.nu0) # Go to dimensionless time
-    #import ipdb; ipdb.set_trace()
     while circ.t < tmax:
         circ.evolve(dstep, emptyDt=True)
         circ.writeToFile()
@@ -350,7 +346,7 @@ if __name__ == '__main__':
                         help='Fudge factor that the torque term is proportional to')
     parser.add_argument('--mdisk', default=0.1, type=float,
                         help='Total mass of the disk in units of central binary mass.')
-    parser.add_argument('--emptydt', default=0.01, type=float,
+    parser.add_argument('--emptydt', default=0.001, type=float,
                         help='Factor to use when using the emptyDt=True option')
     parser.add_argument('--delta', default=1.0e-100, type=float,
                         help='Small number to add to avoid divisions by zero')

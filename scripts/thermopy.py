@@ -54,13 +54,13 @@ def Tfin(Tcheck, r, Sigma, q, f):
             #plt.semilogx(Ts, np.log10(ys+1.0))
             #plt.semilogx(Ts, np.log10(-ys+1.0))
             #plt.show()
-            return brentq(func2,1.0e-3,166.81001,args=(r,Sigma,q,f), maxiter=200)
+            return brentq(func2, 1.0e-3, 166.81001, args=(r,Sigma,q,f), maxiter=200)
         if 166.81 <= T1 <= 202.677:
             return T1
         else:
-            return brentq(func2,1.0e-3,166.81001,args=(r,Sigma,q,f), maxiter=200)
+            return brentq(func2, 1.0e-3, 166.81001, args=(r,Sigma,q,f), maxiter=200)
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
     Return a table of precomputed temperatures as a function of radius and surface density.
 
@@ -92,9 +92,9 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1.0e6, Sigmin=1.0e
                     print "args2=", r, Sigma, q, f
                     Ts = np.linspace(1.0e-3, 166.813, num=1000)
                     ys = func2(Ts, r, Sigma, q, f)
-                    #plt.semilogx(Ts, np.log10(ys+1.0))
-                    #plt.semilogx(Ts, np.log10(-ys+1.0))
-                    plt.semilogx(Ts, ys)
+                    plt.semilogx(Ts, np.log10(ys+1.0))
+                    plt.semilogx(Ts, np.log10(-ys+1.0))
+                    #plt.semilogx(Ts, ys)
                     plt.show()
                     raise
     # Return values in logspace for interpolation
