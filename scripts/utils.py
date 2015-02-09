@@ -100,7 +100,7 @@ def pickle_results(filename=None, verbose=True):
     return pickle_func
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
-def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.001, FMin=1.0e33):
+def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, FMin=1.0e35):
     """
     Plot panel with Sigma, temperature, and FJ
     """
@@ -111,7 +111,7 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.001, FM
         print "You didn't specify times, I'll plot the times: {0}".format(times)
 
     if xlim==None:
-        xlim=(circ.r[0], 1.0e3*circ.r[0])
+        xlim=(circ.r[0], 1.0e5*circ.r[0])
 
     axSigma = plt.subplot(3, 1, 1)
     axT = plt.subplot(3, 1, 2)

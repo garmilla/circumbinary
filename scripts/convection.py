@@ -15,7 +15,7 @@ from constants import *
 from utils import pickle_results
 
 class Circumbinary(object):
-    def __init__(self, rmax=1.0e2, ncell=200, dt=1.0e-6, delta=1.0e-100,
+    def __init__(self, rmax=1.0e4, ncell=300, dt=1.0e-6, delta=1.0e-100,
                  fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
                  bellLin=True, emptydt=0.01, **kargs):
         self.rmax = rmax
@@ -139,6 +139,7 @@ class Circumbinary(object):
                 if np.sum(badMin) > 0:
                     T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
                 if np.sum(badMax) > 0:
+                    raise ValueError("Extrapolation to large values of Sigma is not allowed, build a table with a larger Sigmax")
                     T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
                 return T
             # Store interpolator as an instance method
@@ -174,16 +175,9 @@ class Circumbinary(object):
             self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
         else:
             self.vr = self.vrVisc
-            #self.eq = TransientTerm(var=self.Sigma) == - ExponentialConvectionTerm(coeff=self.vr, var=self.Sigma)\
             mask_coeff = (self.mesh.facesLeft * self.mesh.faceNormals).getDivergence()
-            #self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-            eqX = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-                                                   - mask_coeff*3.0/2*self.nu/self.mesh.x*self.Sigma.old
-            #eqI = TransientTerm(var=self.Sigma) == - UpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-            #                                       - ImplicitSourceTerm(coeff=mask_coeff*3.0/2*self.nu/self.mesh.x, var=self.Sigma)
-            self.eq = eqX
-            #self.eq = TransientTerm(var=self.Sigma) == - UpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-            #                                           - ImplicitSourceTerm(coeff=mask_coeff*3.0/2*self.nu/self.mesh.x, var=self.Sigma)
+            self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+                                                       - mask_coeff*3.0/2*self.nu/self.mesh.x*self.Sigma.old
 
     def dimensionalSigma(self):
         """
@@ -228,15 +222,7 @@ class Circumbinary(object):
             if self.q > 0.0:
                 self.eq.sweep(dt=self.dt)
             elif self.q == 0.0:
-                #self.Sigma.constrain(self.visc.grad/self.nu*2*self.r**0.5, where=self.mesh.facesLeft)
-                #bc = FixedFlux(self.mesh.facesLeft, 3.0/2*self.nu.faceValue.value[0]*self.Sigma.faceValue.value[0]/self.rF[0])
-                #self.eq.sweep(dt=self.dt, boundaryConditions=(bc,))
                 self.eq.sweep(dt=self.dt)
-                #res = sweepMonotonic(self.eq.sweep, dt=self.dt)
-                #for i in range(10):
-                #    res = self.eq.sweep(dt=self.dt)
-                #    print res
-                print "t=", self.t, "dt=", self.dt
             if np.any(self.Sigma.value < 0.0):
                 self.singleTimestep(dt=self.dt/2)
             if update:
@@ -352,9 +338,9 @@ def run(**kargs):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
              description="Script that solves the convection problem in a cylindrical grid")
-    parser.add_argument('--rmax', default=1.0e3, type=float,
+    parser.add_argument('--rmax', default=1.0e4, type=float,
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
-    parser.add_argument('--ncell', default=200, type=int,
+    parser.add_argument('--ncell', default=300, type=int,
                         help='The number of cells to use in the grid')
     parser.add_argument('--dt', default=1.0e-6, type=float,
                         help='The time step size (Constant for the moment)')
