@@ -108,7 +108,9 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
 
     if times == None:
         times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
-        print "You didn't specify times, I'll plot the times: {0}".format(times)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
 
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
@@ -128,6 +130,7 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
 
     for i, t in enumerate(times):
         circ.loadTime(t)
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
         Sigma = circ.dimensionalSigma()
         FJ = circ.dimensionalFJ()
         if logLog:

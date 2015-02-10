@@ -191,14 +191,25 @@ class Circumbinary(object):
         """
         return 3*np.pi*self.nu.value*self.nu0*self.dimensionalSigma()*np.sqrt(G*M*self.r*a*self.gamma)
 
-    def dimensionalTime(self, mode='yr'):
+    def dimensionalTime(self, t=None, mode='yr'):
         """
         Return current time in dimensional units (years or seconds)
         """
+        if t == None:
+            t = self.t
         if mode == 'yr' or mode == 'years' or mode == 'year':
-            return self.t*(a*self.gamma)**2/self.nu0/(365*24*60*60)
+            return t*(a*self.gamma)**2/self.nu0/(365*24*60*60)
         else:
-            return self.t*(a*self.gamma)**2/self.nu0
+            return t*(a*self.gamma)**2/self.nu0
+
+    def dimensionlessTime(self, t, mode='yr'):
+        """
+        Returns the dimensionless value of the time given as an argument
+        """
+        if mode == 'yr' or mode == 'years' or mode == 'year':
+            return t/(a*self.gamma)**2*self.nu0*(365*24*60*60)
+        else:
+            return t/(a*self.gamma)**2*self.nu0
 
     def singleTimestep(self, dtMax=0.001, dt=None, update=True, emptyDt=False):
         """
