@@ -30,8 +30,7 @@ def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
 def func(T, r, Sigma, q, f, kappa):
-    return sigma*T**4 - 3*(op1(T , r, Sigma)*T**0.5*Sigma*0.0625 + 2/(op1(T, r, Sigma)*Sigma*T**0.5))*(ftid(r,Sigma,q,f)\
-                                                                                                       + fv(r,T,Sigma)) - sigma*Tirr(r)**4
+    return sigma*T**4 - 3*(op1(T , r, Sigma)*T**0.5*Sigma*0.0625 + 2/(op1(T, r, Sigma)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def op(T, r, Sigma, kappa):
     if kappa == 1:
