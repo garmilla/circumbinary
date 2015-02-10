@@ -109,7 +109,7 @@ def Tfin(T1, r, Sigma, q, f):
             try:
                 T8 = brentq(func(T, r, Sigma, q, f, 8), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
-                return brentq(func(T, r, Sigma, q, f, 8), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
+                return brentq(func(T, r, Sigma, q, f, 9), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T8 < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
                 return T8
         elif 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 > T8 or T8 > 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
