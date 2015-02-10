@@ -70,71 +70,71 @@ def Tfin(T1, r, Sigma, q, f):
             return brentq(func(T, r, Sigma, q, f, 3), 1.0e-3, 618, args=(r,Sigma,q,f), maxiter=200)
         if 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T2 <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
             return T2
-        elif:
+        elif 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172  > T2 or  T2 > 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
             try:
                 T3 = brentq(func(T, r, Sigma, q, f, 3), 617, 932, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 4), 617, 932, args=(r,Sigma,q,f), maxiter=200)
-            if 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T1 <= 617.376:
+            if 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T3 <= 617.376:
                 return T3
-        elif:
+        elif 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172  > T3 or T3 > 617.376:
             try:
                 T4 = brentq(func(T, r, Sigma, q, f, 4), 617, 932, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 5), 617, 932, args=(r,Sigma,q,f), maxiter=200)
             if 617.376 < T4 < 931.773:
                 return T4
-        elif:
+        elif 617.376 > T4 or T4 > 931.773:
             try:
                 T5 = brentq(func(T, r, Sigma, q, f, 5), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 6), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             if 931.773 <= T5 <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
-            return T5
-        elif:
+                return T5
+        elif 931.773 > T5 or T5 > 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
             try:
                 T6 = brentq(func(T, r, Sigma, q, f, 6), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 7), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             if 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T6 < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
                 return T6
-        elif:
+        elif 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 > T6 or T6 > 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
             try:
                 T7 = brentq(func(T, r, Sigma, q, f, 7), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 8), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             if 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T7 <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
                 return T7
-        elif:
+        elif 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 > T7 or T7 > 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
             try:
                 T8 = brentq(func(T, r, Sigma, q, f, 8), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 8), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
-            if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
+            if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T8 < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
                 return T8
-        elif:
+        elif 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 > T8 or T8 > 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
             try:
                 T9 = brentq(func(T, r, Sigma, q, f, 9), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 10), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
-            if 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
+            if 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T9 <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
                 return T9
-        elif:
+        elif 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 >T9 or T9 > 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
             try:
                 T10 = brentq(func(T, r, Sigma, q, f, 10), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 11), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
-                    if 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
-                        return T10
-elif:
-    try:
-        T11 = brentq(func(T, r, Sigma, q, f, 11), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
+            if 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T10 < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+                return T10
+        elif 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 > T10 or T10 > 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+            try:
+                T11 = brentq(func(T, r, Sigma, q, f, 11), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
             except ValueError:
                 return brentq(func(T, r, Sigma, q, f, 12), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
-                    if 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558:
-                        return T11
-                            else:
-                                return brentq(func(T, r, Sigma, q, f, 12), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
+            if 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T11 <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558:
+                return T11
+        else:
+            return brentq(func(T, r, Sigma, q, f, 12), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
