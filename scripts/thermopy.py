@@ -30,7 +30,7 @@ def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
 def func(T, r, Sigma, q, f, kappa):
-    return sigma*T**4 - 3*(op(T , r, Sigma)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
+    return sigma*T**4 - 3*(op(T, r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma, kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def op(T, r, Sigma, kappa):
     if kappa == 1:
@@ -135,7 +135,6 @@ def Tfin(T1, r, Sigma, q, f):
                 return T11
         else:
             return brentq(func(T, r, Sigma, q, f, 12), 931, Tmax, args=(r,Sigma,q,f), maxiter=200)
-
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
