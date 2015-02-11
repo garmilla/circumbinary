@@ -8,7 +8,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import brentq
-import scipy.optimize as optimize
+
 # Constants in cgs
 
 alpha = 1.0e-2
@@ -55,7 +55,7 @@ def func(T, r, Sigma, q, f, kappa):
 def op(T, r, Sigma, kappa):
     if kappa == 1:
         return 0.0125987 * T**1.5
-    elif kappa == 2:
+    elif kappa ==   2:
         return 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916
     elif kappa == 3:
         return 0.00144313* T**1.5
@@ -78,64 +78,100 @@ def op(T, r, Sigma, kappa):
     elif kappa == 12:
         return 10**-.48
     else:
-        raise ValueError("Check your kappa input")
-
+        return "Check your kappa input"
 
 def Tfin(r, Sigma, q, f, idx):
     try:
         T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError:
         Tfin(r, Sigma, q, f, idx+1)
-    if rightregime(T, Sigma, r, idx):
+    if rightRegime(T, idx):
         return T
     else:
-        return Tfin(r, Sigma, q, f, idx+1)
+        Tfin(r, Sigma, q, f, idx+1)
 
-def rightregime(T, Sigma, r, idx):
-    
-    if idx == 1:
-        return T < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
-    
-    elif idx == 2:
-        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
-    
-    elif idx == 3:
-        return 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T <= 617.376
-    
-    elif idx == 4:
-        return 617.376 < T < 931.773
-    
-    elif idx == 5:
-        return 931.773 <= T <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182
-    
-    elif idx == 6:
-        return 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398
-    
-    elif idx == 7:
-        return 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457
-    
-    elif idx == 8:
-        return 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548
-    
-    elif idx == 9:
-        return 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134
-    
-    elif idx == 10:
-        return 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816
-    
-    elif idx == 11:
-        return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
-    
+def rightRegima(T, idx):
+    # If it's in the right regime return True, False otherwise
+    try:
+        T1 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,1), maxiter=200)
+    except ValueError:
+        return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,2), maxiter=200)
+    if T1 < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172:
+        return T1
     else:
-        return T > 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
+        try:
+            T2 =  brentq(func,1e-3,618,args=(r,Sigma,q,f,2), maxiter=200)
+        except ValueError:
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
+        if 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T2 <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
+            return T2
+        elif 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172  > T2 or  T2 > 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
+            try:
+                T3 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
+            if 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T3 <= 617.376:
+                return T3
+        elif 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172  > T3 or T3 > 617.376:
+            try:
+                T4 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
+            if 617.376 < T4 < 931.773:
+                return T4
+        elif 617.376 > T4 or T4 > 931.773:
+            try:
+                T5 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+            if 931.773 <= T5 <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
+                return T5
+        elif 931.773 > T5 or T5 > 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
+            try:
+                T6 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+            if 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T6 < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
+                return T6
+        elif 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 > T6 or T6 > 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
+            try:
+                T7 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+            if 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T7 <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
+                return T7
+        elif 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 > T7 or T7 > 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
+            try:
+                T8 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+            if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T8 < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
+                return T8
+        elif 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 > T8 or T8 > 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
+            try:
+                T9 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+            if 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T9 <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
+                return T9
+        elif 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 >T9 or T9 > 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
+            try:
+                T10 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+            if 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T10 < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+                return T10
+        elif 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 > T10 or T10 > 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+            try:
+                T11 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
+            if 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T11 <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558:
+                return T11
+        else:
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
 
 
-#print brentq(func, Tmin, Tmax, args=(0.3 *AU,1,1,1,10), maxiter=200)
-#print op(T,0.3*AU,1,1)
-T = np.logspace(-3,7,100)
-plt.plot(T,func(T,0.3*AU,1,1,1,10))
-plt.show()
-print max(func(T,30*AU,1,1,1,8))
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
@@ -174,4 +210,3 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e
                     raise
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
-
