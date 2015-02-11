@@ -68,6 +68,7 @@ def Tfin(r, Sigma, q, f, idx):
         T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError:
         Tfin(r, Sigma, q, f, idx+1)
+    T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     if rightregime(T, Sigma, r, idx):
         return T
     else:
