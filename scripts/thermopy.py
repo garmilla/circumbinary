@@ -30,15 +30,15 @@ def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
 def func(T, r, Sigma, q, f):
-    return sigma*T**4 - 3*(kappa0*T**0.5*Sigma*0.0625 + 2/(kappa0*Sigma*T**0.5))*(ftid(r,Sigma,q,f)\
+    return sigma*T**4 - (3*kappa0*T**0.5*Sigma*0.0625 + 2/(kappa0*Sigma*T**0.5))*(ftid(r,Sigma,q,f)\
            + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def func1(T, r, Sigma, q, f):
-    return sigma*T**4 - 3*(kappa1*T**(-7)*Sigma*0.0625 + 2/(kappa1*Sigma*T**(-7)))*(ftid(r,Sigma,q,f)\
+    return sigma*T**4 - (3*kappa1*T**(-7)*Sigma*0.0625 + 2/(kappa1*Sigma*T**(-7)))*(ftid(r,Sigma,q,f)\
            + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def func2(T, r, Sigma, q, f):
-    return sigma*T**4 - 3*(kappa2*T**2*Sigma*0.0625 + 2/(kappa2*Sigma*T**2))*(ftid(r,Sigma,q,f)\
+    return sigma*T**4 - (3*kappa2*T**2*Sigma*0.0625 + 2/(kappa2*Sigma*T**2))*(ftid(r,Sigma,q,f)\
            + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def Tfin(Tcheck, r, Sigma, q, f):
