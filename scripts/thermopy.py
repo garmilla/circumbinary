@@ -8,8 +8,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import brentq
-import scipy.optimize as optimize
+
 # Constants in cgs
+
+alpha = 1.0e-2
+eta = 3.5
+c = 29979245800.0
+beta = 0.5
+G = 6.674e-8
+kappa0 = 0.1
+kappa_es = 0.4
+sigma = 5.6704e-5
+k = 1.3806e-16
+mu = 2*1.673e-24
+AU = 1.49597871e13
+a = 0.2*AU # Semimajor axis of the binary system
+L = 3.839e33
+M = 1.9891e33
+OmegaIn = (G*M/a**3)**0.5
+cs = 1.0e5
+
+Tmin = 1e-3
+Tmax = 5e6
 
 def lam(r, q, f):
     return f*q**2*G*M/a*(a/(r-a))**4
@@ -29,52 +49,13 @@ def fv(r, T, Sigma):
 def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
-<<<<<<< HEAD
-def func(T, r, Sigma, q, f):
-    return sigma*T**4 - (3*kappa0*T**0.5*Sigma*0.0625 + 2/(kappa0*Sigma*T**0.5))*(ftid(r,Sigma,q,f)\
-           + fv(r,T,Sigma)) - sigma*Tirr(r)**4
-
-def func1(T, r, Sigma, q, f):
-    return sigma*T**4 - (3*kappa1*T**(-7)*Sigma*0.0625 + 2/(kappa1*Sigma*T**(-7)))*(ftid(r,Sigma,q,f)\
-           + fv(r,T,Sigma)) - sigma*Tirr(r)**4
-
-def func2(T, r, Sigma, q, f):
-    return sigma*T**4 - (3*kappa2*T**2*Sigma*0.0625 + 2/(kappa2*Sigma*T**2))*(ftid(r,Sigma,q,f)\
-           + fv(r,T,Sigma)) - sigma*Tirr(r)**4
-
-def Tfin(Tcheck, r, Sigma, q, f):
-    if Tcheck >= 202.677:
-        return Tcheck
-    else:
-        try:
-            T1 =  brentq(func1,166.8099,202.677001,args=(r,Sigma,q,f), maxiter=200)
-        except ValueError:
-            #print "args1=", r, Sigma, q, f
-            #Ts = np.linspace(166.8099, 202.677001, num=1000)
-            #ys = func1(Ts, r, Sigma, q, f)
-            #plt.semilogx(Ts, np.log10(ys+1.0))
-            #plt.semilogx(Ts, np.log10(-ys+1.0))
-            #plt.show()
-            return brentq(func2, 1.0e-3, 166.81001, args=(r,Sigma,q,f), maxiter=200)
-        if 166.81 <= T1 <= 202.677:
-            return T1
-        else:
-            return brentq(func2, 1.0e-3, 166.81001, args=(r,Sigma,q,f), maxiter=200)
-
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1.0e7, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
-    """
-    Return a table of precomputed temperatures as a function of radius and surface density.
-
-    Arguments:
-    rGrid: Grid of radii to compute the temperatures for, it has to be in cgs units.
-=======
 def func(T, r, Sigma, q, f, kappa):
     return sigma*T**4 - (3*op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma,kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def op(T, r, Sigma, kappa):
     if kappa == 1:
         return 0.0125987 * T**1.5
-    elif kappa == 2:
+    elif kappa ==   2:
         return 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916
     elif kappa == 3:
         return 0.00144313* T**1.5
@@ -97,64 +78,91 @@ def op(T, r, Sigma, kappa):
     elif kappa == 12:
         return 10**-.48
     else:
-        raise ValueError("Check your kappa input")
+        return "Check your kappa input"
 
-
-def Tfin(r, Sigma, q, f, idx):
-    Tmin = 1e-3
-    Tmax = 1e7
+def Tfin(T1, r, Sigma, q, f):
     try:
-        T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
+        T1 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,1), maxiter=200)
     except ValueError:
-        Tfin(r, Sigma, q, f, idx+1)
-    if rightregime(T, Sigma, r, idx):
-        return T
+        return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,2), maxiter=200)
+    if T1 < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172:
+        return T1
     else:
-        return Tfin(r, Sigma, q, f, idx+1)
+        try:
+            T2 =  brentq(func,1e-3,618,args=(r,Sigma,q,f,2), maxiter=200)
+        except ValueError:
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
+        if 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T2 <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
+            return T2
+        elif 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172  > T2 or  T2 > 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
+            try:
+                T3 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
+            if 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T3 <= 617.376:
+                return T3
+        elif 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172  > T3 or T3 > 617.376:
+            try:
+                T4 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
+            if 617.376 < T4 < 931.773:
+                return T4
+        elif 617.376 > T4 or T4 > 931.773:
+            try:
+                T5 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+            if 931.773 <= T5 <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
+                return T5
+        elif 931.773 > T5 or T5 > 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
+            try:
+                T6 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+            if 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T6 < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
+                return T6
+        elif 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 > T6 or T6 > 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
+            try:
+                T7 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+            if 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T7 <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
+                return T7
+        elif 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 > T7 or T7 > 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
+            try:
+                T8 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+            if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T8 < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
+                return T8
+        elif 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 > T8 or T8 > 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
+            try:
+                T9 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+            if 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T9 <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
+                return T9
+        elif 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 >T9 or T9 > 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
+            try:
+                T10 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+            if 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T10 < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+                return T10
+        elif 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 > T10 or T10 > 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
+            try:
+                T11 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+            except ValueError:
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
+            if 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T11 <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558:
+                return T11
+        else:
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
 
-def rightregime(T, Sigma, r, idx):
-    
-    if idx == 1:
-        return T < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
-    
-    elif idx == 2:
-        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
-    
-    elif idx == 3:
-        return 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T <= 617.376
-    
-    elif idx == 4:
-        return 617.376 < T < 931.773
-    
-    elif idx == 5:
-        return 931.773 <= T <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182
-    
-    elif idx == 6:
-        return 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398
-    
-    elif idx == 7:
-        return 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457
-    
-    elif idx == 8:
-        return 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548
-    
-    elif idx == 9:
-        return 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134
-    
-    elif idx == 10:
-        return 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816
-    
-    elif idx == 11:
-        return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
-    
-    elif idx == 12:
-        return T > 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
-    
-    else:
-        raise ValueError("Opacity index out of range")
->>>>>>> cc00b6cbb3987756a4201e998f863ab46aafebac
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1e7, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
+
+def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
@@ -175,9 +183,19 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1e7, Sigmin=1.0e-5
     for i, r in enumerate(rGrid):
         for j, Sigma in enumerate(SigmaGrid):
             try:
-                temp[i,j] = Tfin(r, Sigma, q, f, 1)
+                T1 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,1), maxiter=200)
+                temp[i,j] = Tfin(T1, r, Sigma, q, f)
             except ValueError:
-                print "No solution found for any opacities"
+                try:
+                    temp[i,j] = Tfin(1.0, r, Sigma, q, f)
+                except ValueError:
+                    print "args2=", r, Sigma, q, f
+                    Ts = np.linspace(1.0e-3, 166.813, num=1000)
+                    ys = func2(Ts, r, Sigma, q, f)
+                    plt.semilogx(Ts, np.log10(ys+1.0))
+                    plt.semilogx(Ts, np.log10(-ys+1.0))
+                    #plt.semilogx(Ts, ys)
+                    plt.show()
+                    raise
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
-
