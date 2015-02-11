@@ -108,8 +108,11 @@ def rightregime(T, Sigma, r, idx):
     elif idx == 11:
         return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
     
-    else:
+    elif idx == 12:
         return T > 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
+    
+    else:
+        raise ValueError("Opacity index out of range")
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1e7, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
