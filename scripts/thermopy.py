@@ -114,7 +114,7 @@ def rightregime(T, Sigma, r, idx):
     else:
         raise ValueError("Opacity index out of range")
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=1e7, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1e-3, Tmax=1e4, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
