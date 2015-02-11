@@ -114,7 +114,7 @@ def rightregime(T, Sigma, r, idx):
     else:
         raise ValueError("Opacity index out of range")
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1e-3, Tmax=1e4, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
@@ -122,8 +122,6 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=1e-3, Tmax=1e4, Sigmin=1.0e-5, Si
         Keywords:
         q: Ratio of the masses of the stars in the binary, between 0 and 1.
         f: Fudge factor used to tune the magnitude of the tidal torque.
-        Tmax: Maximum temperature to use as a starting point for the upper bound of brentq.
-        Tmin: Minimum temperature to use as a starting point for the lower bound of brentq.
         Sigmin: Minimum value for the surface density to compute temperatures for.
         Sigmax: Maximum value for the surface density to compute temperatures for.
         Sigres: Number of points to use for surface density in the table, it will be logarthmically spaced
