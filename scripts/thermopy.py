@@ -28,6 +28,7 @@ M = 1.9891e33
 OmegaIn = (G*M/a**3)**0.5
 cs = 1.0e5
 
+Tmin = 1e-3
 Tmax = 5e6
 
 def lam(r, q, f):
@@ -49,7 +50,7 @@ def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
 def func(T, r, Sigma, q, f, kappa):
-    return sigma*T**4 - 3*(op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma, kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
+    return sigma*T**4 - 3*(op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma,kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def op(T, r, Sigma, kappa):
     if kappa == 1:
@@ -80,80 +81,85 @@ def op(T, r, Sigma, kappa):
         return "Check your kappa input"
 
 def Tfin(T1, r, Sigma, q, f):
+    try:
+        T1 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,1), maxiter=200)
+    except ValueError:
+        return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,2), maxiter=200)
     if T1 < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172:
         return T1
     else:
         try:
             T2 =  brentq(func,1e-3,618,args=(r,Sigma,q,f,2), maxiter=200)
         except ValueError:
-            return brentq(func, 1.0e-3, 618, args=(r,Sigma,q,f,3), maxiter=200)
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
         if 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172 <= T2 <= 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
             return T2
         elif 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172  > T2 or  T2 > 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172:
             try:
-                T3 = brentq(func, 617, 932, args=(r,Sigma,q,f,3), maxiter=200)
+                T3 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,3), maxiter=200)
             except ValueError:
-                return brentq(func, 617, 932, args=(r,Sigma,q,f,4), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
             if 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172 <= T3 <= 617.376:
                 return T3
         elif 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172  > T3 or T3 > 617.376:
             try:
-                T4 = brentq(func, 617, 932, args=(r,Sigma,q,f,4), maxiter=200)
+                T4 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,4), maxiter=200)
             except ValueError:
-                return brentq(func, 617, 932, args=(r,Sigma,q,f,5), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
             if 617.376 < T4 < 931.773:
                 return T4
         elif 617.376 > T4 or T4 > 931.773:
             try:
-                T5 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
+                T5 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,5), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
             if 931.773 <= T5 <= 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
                 return T5
         elif 931.773 > T5 or T5 > 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182:
             try:
-                T6 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
+                T6 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,6), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
             if 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 < T6 < 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
                 return T6
         elif 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182 > T6 or T6 > 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398:
             try:
-                T7 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
+                T7 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,7), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
             if 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 <= T7 <= 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
                 return T7
         elif 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398 > T7 or T7 > 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457:
             try:
-                T8 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
+                T8 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,8), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
             if 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 < T8 < 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
                 return T8
         elif 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457 > T8 or T8 > 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548:
             try:
-                T9 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
+                T9 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,9), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
             if 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 <= T9 <= 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
                 return T9
         elif 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548 >T9 or T9 > 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134:
             try:
-                T10 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
+                T10 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,10), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
             if 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 < T10 < 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
                 return T10
         elif 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134 > T10 or T10 > 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816:
             try:
-                T11 = brentq(func, 931, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
+                T11 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,11), maxiter=200)
             except ValueError:
-                return brentq(func, 931, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
+                return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
             if 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816 <= T11 <= 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558:
                 return T11
         else:
-            return brentq(func, 931, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
+            return brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,12), maxiter=200)
+
 
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
