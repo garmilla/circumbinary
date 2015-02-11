@@ -80,7 +80,18 @@ def op(T, r, Sigma, kappa):
     else:
         return "Check your kappa input"
 
-def Tfin(T1, r, Sigma, q, f):
+def Tfin(r, Sigma, q, f, idx):
+    try:
+        T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
+    except ValueError:
+        Tfin(r, Sigma, q, f, idx+1)
+    if rightRegime(T, idx):
+        return T
+    else:
+        Tfin(r, Sigma, q, f, idx+1)
+    
+def rightRegima(T, idx):
+    # If it's in the right regime return True, False otherwise
     try:
         T1 = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,1), maxiter=200)
     except ValueError:
