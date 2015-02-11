@@ -15,6 +15,6 @@ mu = 2*1.673e-24
 AU = 1.49597871e13
 a = 0.2*AU # Semimajor axis of the binary system
 L = 3.839e33
-M = 1.9891e33
+M = 2*1.9891e33
 OmegaIn = (G*M/a**3)**0.5
 cs = 1.0e5
