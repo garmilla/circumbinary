@@ -8,28 +8,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import brentq
-import scipy.optimize as optimize
 # Constants in cgs
 
-alpha = 1.0e-2
-eta = 3.5
-c = 29979245800.0
-beta = 0.5
-G = 6.674e-8
-kappa0 = 0.1
-kappa_es = 0.4
-sigma = 5.6704e-5
-k = 1.3806e-16
-mu = 2*1.673e-24
-AU = 1.49597871e13
-a = 0.2*AU # Semimajor axis of the binary system
-L = 3.839e33
-M = 1.9891e33
-OmegaIn = (G*M/a**3)**0.5
-cs = 1.0e5
-
-Tmin = 1e-3
-Tmax = 5e6
 
 def lam(r, q, f):
     return f*q**2*G*M/a*(a/(r-a))**4
@@ -82,6 +62,8 @@ def op(T, r, Sigma, kappa):
 
 
 def Tfin(r, Sigma, q, f, idx):
+    Tmin = 1e-3
+    Tmax = 5e6
     try:
         T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError:
@@ -129,13 +111,6 @@ def rightregime(T, Sigma, r, idx):
     else:
         return T > 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
 
-
-#print brentq(func, Tmin, Tmax, args=(0.3 *AU,1,1,1,10), maxiter=200)
-#print op(T,0.3*AU,1,1)
-T = np.logspace(-3,7,100)
-plt.plot(T,func(T,0.3*AU,1,1,1,10))
-plt.show()
-print max(func(T,30*AU,1,1,1,8))
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Tmin=202.6769, Tmax=5.0e6, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
