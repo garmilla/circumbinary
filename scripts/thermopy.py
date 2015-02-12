@@ -147,13 +147,14 @@ def Tfin(r, Sigma, q, f, idx):
     try:
         T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError, e:
-        Tfin(r, Sigma, q, f, idx+1)
+        T = Tfin(r, Sigma, q, f, idx+1)
     else:
         if rightregime(T, Sigma, r, idx):
             return T
         else:
-            print "Adding one to %d" %(idx)
+            print "Found solution outside of allowed regime, adding one to %d" %(idx)
             return Tfin(r, Sigma, q, f, idx+1)
+    return T
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
