@@ -9,7 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import brentq
 import scipy.optimize as optimize
+
+from constants import *
 # Constants in cgs
+
 
 def lam(r, q, f):
     return f*q**2*G*M/a*(a/(r-a))**4
