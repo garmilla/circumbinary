@@ -70,12 +70,16 @@ def Tfin(r, Sigma, q, f, idx):
     try:
         T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError:
+        print "ValueError at %d" %(idx)
         Tfin(r, Sigma, q, f, idx+1)
     T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
     if rightregime(T, Sigma, r, idx):
+        #        print T
         return T
     else:
+        print "Adding one to %d" %(idx)
         return Tfin(r, Sigma, q, f, idx+1)
+
 
 def rightregime(T, Sigma, r, idx):
     
