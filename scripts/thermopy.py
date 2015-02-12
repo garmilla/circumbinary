@@ -32,9 +32,6 @@ def fv(r, T, Sigma):
 def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
-def func(T, r, Sigma, q, f, kappa):
-    return sigma*T**4 - (3*op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma,kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
-
 def op(T, r, Sigma, kappa):
     if kappa == 1:
         return 0.0125987 * T**1.5
@@ -63,26 +60,10 @@ def op(T, r, Sigma, kappa):
     else:
         raise ValueError("Check your kappa input")
 
-
-def Tfin(r, Sigma, q, f, idx):
-    Tmin = 1e-3
-    Tmax = 1e7
-    try:
-        T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
-    except ValueError:
-        print "ValueError at %d" %(idx)
-        Tfin(r, Sigma, q, f, idx+1)
-    T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
-    if rightregime(T, Sigma, r, idx):
-        #        print T
-        return T
-    else:
-        print "Adding one to %d" %(idx)
-        return Tfin(r, Sigma, q, f, idx+1)
-
+def func(T, r, Sigma, q, f, kappa):
+    return sigma*T**4 - (3*op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma,kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def rightregime(T, Sigma, r, idx):
-    
     if idx == 1:
         return T < 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
     
@@ -122,6 +103,58 @@ def rightregime(T, Sigma, r, idx):
     else:
         raise ValueError("Opacity index out of range")
 
+def getBracket(r, Sigma, idx):
+    if idx == 1:
+        return 0.0, 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
+    
+    elif idx == 2:
+        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
+    
+    elif idx == 3:
+        return 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172, 617.376
+    
+    elif idx == 4:
+        return 617.376, 931.773
+    
+    elif idx == 5:
+        return 931.773, 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182
+    
+    elif idx == 6:
+        return 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182, 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398
+    
+    elif idx == 7:
+        return 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398, 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457
+    
+    elif idx == 8:
+        return 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457, 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548
+    
+    elif idx == 9:
+        return 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548, 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134
+    
+    elif idx == 10:
+        return 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134, 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816
+    
+    elif idx == 11:
+        return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
+    
+    elif idx == 12:
+        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 1.0e8
+    else:
+        raise ValueError("Opacity index out of range")
+
+def Tfin(r, Sigma, q, f, idx):
+    Tmin, Tmax = getBracket(r, Sigma, idx)
+    try:
+        T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
+    except ValueError, e:
+        Tfin(r, Sigma, q, f, idx+1)
+    else:
+        if rightregime(T, Sigma, r, idx):
+            return T
+        else:
+            print "Adding one to %d" %(idx)
+            return Tfin(r, Sigma, q, f, idx+1)
+
 def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
@@ -142,8 +175,12 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=20
         for j, Sigma in enumerate(SigmaGrid):
             try:
                 temp[i,j] = Tfin(r, Sigma, q, f, 1)
-            except ValueError:
+            except ValueError, e:
+                print e
                 print "No solution found for any opacities"
+                #import ipdb; ipdb.set_trace()
+                temp[i,j] = Tfin(r, Sigma, q, f, 1)
+                raise
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
 
