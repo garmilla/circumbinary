@@ -142,19 +142,19 @@ def getBracket(r, Sigma, idx):
     else:
         raise ValueError("Opacity index out of range")
 
-def Tfin(r, Sigma, q, f, idx):
+def Tfin(r, Sigma, q, f, idx, delta=10.0):
     Tmin, Tmax = getBracket(r, Sigma, idx)
     try:
-        T = brentq(func, Tmin, Tmax, args=(r,Sigma,q,f,idx), maxiter=200)
+        T = brentq(func, Tmin-delta, Tmax+delta, args=(r,Sigma,q,f,idx), maxiter=200)
     except ValueError, e:
-        T = Tfin(r, Sigma, q, f, idx+1)
+        return Tfin(r, Sigma, q, f, idx+1)
     else:
         if rightregime(T, Sigma, r, idx):
             return T
         else:
-            print "Found solution outside of allowed regime, adding one to %d" %(idx)
+            print "Found solution T={0}, outside of allowed regime ({1}, {2})".format(T, Tmin, Tmax)
+            print "Sigma={1} r={2} AU, idx={3}".format(T,Sigma,r/AU,idx)
             return Tfin(r, Sigma, q, f, idx+1)
-    return T
 
 def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, **kargs):
     """
