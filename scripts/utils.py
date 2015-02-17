@@ -4,6 +4,9 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
+from constants import *
+import thermopy as thm
+
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
 
@@ -141,4 +144,64 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
             axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
             axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
             axFJ.semilogx(circ.r, FJ, color=_colors[i%7])
+    return fig
+
+def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+    """
+    Plot panel with Sigma, temperature, and FJ
+    """
+    fig = plt.figure()
+
+    if times == None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
+
+    if xlim==None:
+        xlim=(circ.r[0], 1.0e5*circ.r[0])
+
+    axSigma = plt.subplot(2, 2, 1)
+    axT = plt.subplot(2, 2, 2)
+    axOp = plt.subplot(2, 2, 3)
+    axTau = plt.subplot(2, 2, 4)
+
+    axSigma.set_ylabel("Sigma")
+    axSigma.set_xlabel("r/r0")
+    axT.set_ylabel("T")
+    axT.set_xlabel("r/r0")
+    axOp.set_ylabel("$\\kappa$")
+    axOp.set_xlabel("r/r0")
+    axTau.set_ylabel("$\\tau$")
+    axTau.set_xlabel("r/r0")
+
+    axSigma.set_xlim(xlim)
+    axT.set_xlim(xlim)
+    axOp.set_xlim(xlim)
+    axTau.set_xlim(xlim)
+
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+        Sigma = circ.dimensionalSigma()
+        r = circ.r*circ.gamma*a # Dimensional radius
+        T = circ.T.value
+        kappa = np.zeros(T.shape)
+        for idx in range(1, 13):
+            Tmin, Tmax = thm.getBracket(r, Sigma, idx)
+            good = np.logical_and(True, T > Tmin)
+            good = np.logical_and(good, T < Tmax)
+            kappa[good] = thm.op(T[good], r[good], Sigma[good], idx)
+
+        if logLog:
+            axSigma.loglog(circ.r, np.maximum(sigMin, Sigma), color=_colors[i%7])
+            axT.loglog(circ.r, circ.T.value, color=_colors[i%7])
+            axOp.loglog(circ.r, kappa, color=_colors[i%7])
+            axTau.loglog(circ.r, np.maximum(kappa*sigMin, kappa*Sigma), color=_colors[i%7])
+        else:
+            axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
+            axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
+            axOp.semilogx(circ.r, kappa, color=_colors[i%7])
+            axTau.semilogx(circ.r, kappa*Sigma, color=_colors[i%7])
+
     return fig
