@@ -36,7 +36,7 @@ def op(T, r, Sigma, kappa):
     if kappa == 1:
         return 0.0125987 * T**1.5
     elif kappa == 2:
-        return 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916
+        return 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916/T**3.48404
     elif kappa == 3:
         return 0.00144313* T**1.5
     elif kappa == 4:
@@ -68,7 +68,7 @@ def getBracket(r, Sigma, idx):
         return 0.0, 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
     
     elif idx == 2:
-        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172/T**3.48404
+        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
     
     elif idx == 3:
         return 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172, 617.376
