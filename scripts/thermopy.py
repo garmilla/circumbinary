@@ -44,7 +44,7 @@ def op(T, r, Sigma, idx):
     elif idx == 5:
         kappa = 1.14868 *10**-6 *T**2.129
     elif idx == 6:
-        kappa = 1.2583*10**135*(Omega(r) * Sigma*(k/mu)**0.5)**1.312/T**42.324
+        kappa = 1.25893*10**135*(Omega(r) * Sigma*(k/mu)**0.5)**1.312/T**42.324
     elif idx == 7:
         kappa = 9.71628 *10**-16*T**4.0625
     elif idx == 8:
