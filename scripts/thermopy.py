@@ -102,7 +102,7 @@ def getBracket(r, Sigma, idx):
         return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
     
     elif idx == 12:
-        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 5.0e5
+        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 5.0e6
     else:
         raise ValueError("Opacity index out of range")
 
@@ -114,7 +114,7 @@ def Tfin(r, Sigma, q, f, idx, delta=0.0):
         return Tfin(r, Sigma, q, f, idx+1, delta=delta)
     else:
         if (1.0-delta)*Tmin <= T <= (1.0+delta)*Tmax:
-            return T
+            return idx, T
         else:
             return Tfin(r, Sigma, q, f, idx+1, delta=delta)
 
@@ -134,20 +134,18 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=20
     
     SigmaGrid = np.logspace(np.log10(Sigmin), np.log10(Sigmax), Sigres)
     temp = np.zeros((len(rGrid), Sigres)) #create m x n array for temp
+    idxs = np.zeros((Sigres, len(rGrid)))
     for i, r in enumerate(rGrid):
         for j, Sigma in enumerate(SigmaGrid):
             try:
-                temp[i,j] = Tfin(r, Sigma, q, f, 1)
+                idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.07)
             except ValueError, e:
-                print "i={0}, j={1}".format(i, j)
-                print "r={0} AU, Sigma={1}".format(r/AU, Sigma)
-                #try:
-                #temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.1)
+                temp[i,j] = np.nan
+                idxs[-j,i] = 0
                 #except ValueError, e:
                 #    try:
                 #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
                 #    except ValueError, e:
                 #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.4)
-                raise
     # Return values in logspace for interpolation
-    return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
+    return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp), idxs
