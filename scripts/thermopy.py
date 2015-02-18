@@ -69,10 +69,10 @@ def func(T, r, Sigma, q, f, kappa):
 
 def getBracket(r, Sigma, idx):
     if idx == 1:
-        return 1.0e-3, 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
+        return 1.0e-3, 144.957* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
     
     elif idx == 2:
-        return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
+        return 144.957* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
     
     elif idx == 3:
         return 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172, 617.376
@@ -84,25 +84,25 @@ def getBracket(r, Sigma, idx):
         return 931.773, 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182
     
     elif idx == 6:
-        return 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182, 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398
+        return 1584.42 *(Omega(r) * Sigma * (k/mu)**0.5)**0.027182, 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0283976
     
     elif idx == 7:
-        return 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.028398, 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457
+        return 1719.07 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0283976, 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0304569
     
     elif idx == 8:
-        return 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.030457, 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548
+        return 2137.71 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0304569, 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.00835476
     
     elif idx == 9:
-        return 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.0083548, 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134
+        return 2656.1 * (Omega(r) * Sigma*(k/mu)**0.5)**0.00835476, 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134
     
     elif idx == 10:
-        return 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134, 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816
+        return 5345.15 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0151134, 9767.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0408163
     
     elif idx == 11:
-        return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
+        return 9767.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0408163, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.325581
     
     elif idx == 12:
-        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 5.0e6
+        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.325581, 5.0e6
     else:
         raise ValueError("Opacity index out of range")
 
