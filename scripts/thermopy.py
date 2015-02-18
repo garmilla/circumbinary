@@ -34,7 +34,7 @@ def Tirr(r):
 
 def op(T, r, Sigma, idx):
     if idx == 1:
-        kappa = 0.0125987 * T**1.5
+        kappa = 0.00330119*T**1.5
     elif idx == 2:
         kappa = 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916/T**3.48404
     elif idx == 3:
