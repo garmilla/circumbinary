@@ -1,0 +1,267 @@
+git\documentclass{article}
+\usepackage[hang,bf,small]{caption}
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage{amssymb}
+
+
+\begin{document}
+\begin{flushleft}
+Jose Garmilla \\
+David Vartanyan\\
+Thermodynamics of Circumbinary Disks\\
+\today\\
+\end{flushleft}
+\section{Introduction}
+We consider the evolution of a circumbinary disks. We do not yet allow for a dead zone in the disk.
+
+The thermal timescale is much smaller than the viscous timescale in a circumbinary disk, and so we approximate the temperature in equilibrium.
+
+\section{Thermodynamics}
+We allow for heating of the disk due to viscous dissipation, irradiation from the binary, and dissipation of density waves due to a tidal torque.
+
+Assuming thermal equilibrium, we have, at low optical depths, $\tau \ll 1$,
+
+\begin{equation}
+\tau \sigma T_m^4 = F_{tid} + F_{\nu} + \tau F_{irr}\,,
+\end{equation}
+
+and at high optical depths, $\tau \gg 1$,
+
+\begin{equation}
+\sigma T_m^4 = F_{tid} + \frac{3\tau}{4}  F_\nu + F_{irr}\,.
+\end{equation}
+
+Extrapolated to all optical depths,
+
+\begin{equation} \label{eq:encon}
+\sigma T_m^4= \left(\frac{3\tau}{8} + \frac{1}{\tau}\right) \left(F_{v} + F_{tid}\right) + F_{irr}\,,
+\end{equation}
+
+where $T_m$ the disk midplane temperature. The optical depth is defined as $\tau =\frac{1}{2} \kappa \Sigma$, where $\kappa$ is the opacity.
+
+The tidal heating term per surface is
+
+\begin{equation}
+F_{tid} = \frac{1}{2}\left(\Omega_b - \Omega\right) \Lambda \Sigma\,,
+\end{equation}
+
+where $\Omega_b = \sqrt{G M/a^3}$ is the binary angular velocity, with $a$ the binary semimajor axis, $\Omega = \sqrt{G M/r^{3}}$ is the Keplerian velocity, $M$ is the total mass of the binary, and $\Lambda$ is the torque due to the binary. At radius $r > h(r) + a$,
+
+\begin{equation}
+\Lambda = f \frac{q^2 GM}{a} \left(\frac{a}{r-a}\right)^4\,,
+\end{equation}
+
+where $q$ is the binary mass fraction and $f$ is a correction factor that fixes the inner disk truncation radius. Note that Martin 2013 fix $f =1$, which places their disk inner edge further out. 
+
+The disk height $h(r)$ is given by
+
+\begin{equation}
+\frac{h}{r} = \left(\frac{k\,T\,r}{G M\mu}\right)^\frac{1}{2} \,,
+\end{equation}
+
+by assuming hydrostatic equilibrium for a gas-pressure dominated disk.
+The heating due to irradiation from the binary is
+
+\begin{equation}
+F_{irr} = \frac{1}{2} \frac{L_c}{4\pi r^2} \zeta\,,
+\end{equation}
+
+where $\zeta$ is the incidence angle of radiation from the binary onto the disk at a height $\eta h$. Far from the binary, we can approximate $\zeta$ as
+
+\begin{equation}
+\zeta = r \frac{d}{dr} \left(\frac{\eta h}{r}\right)\,.
+\end{equation}
+
+The heating due to viscous dissipation is
+
+\begin{equation}
+F_\nu = \frac{3}{8\pi} \frac{F_J \Omega}{r^2} = \frac{9}{8} \Omega^2 \nu \Sigma\,,
+\end{equation}
+
+where the second equality comes from the definition of the angular momentum flux $F_J = 3 \pi \nu \Sigma l$, with $l = \Omega r^2$, the specific angular momentum. The viscosity is expressed as
+
+\begin{equation}
+\nu = \alpha \frac{c_s^2}{\Omega}
+\end{equation}
+
+where the sound speed is $c_s = \sqrt{\frac{P}{\rho}}$ and the viscosity is for a gas-pressure dominated disk 
+ 
+\begin{equation}
+\nu = \alpha \frac{k_B T}{\mu \Omega}\,.
+\end{equation}
+
+\section{Opacity}
+
+Following the prescription in Bell \& Lin 2004, we will assume a power-law for the opacity,
+
+\begin{equation} \label{eq:op}
+\kappa = \kappa_o T^\beta\,.
+\end{equation} 
+
+We use a piecewise continuous opacity  for different temperatures,
+
+$$\kappa =
+\begin{cases}
+2\times 10^{-4} T^2, & \textrm{T} \leq 166.81\, \textrm{K} \\
+2\times 10^{16} T^{-7}, & 166.81\, \textrm{K} <  \textrm{T} < 202.677\, \textrm{K} \\
+0.1\times T^{1/2}, & \textrm{T} \geq 202.677\, \textrm{K}
+\end{cases}
+$$
+
+The last expression for opacity holds up to greater than $2000$\,K, higher than disk temperatures we will consider.
+
+\section{Disk Evolution}
+
+We can now evaluate the disk evolution equation by expressing viscosity as a function of surface density $\Sigma$ and radius $r$.
+
+The disk evolution equation is
+
+\begin{equation} \label{eq:diskev}
+\frac{\partial \Sigma}{\partial t} = \frac{1}{r} \frac{\partial}{\partial r} \left[3 r^{1/2} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right) - \frac{2 \Lambda \Sigma r^{3/2}}{(G M)^{1/2}}\right]\,,
+\end{equation}
+
+
+where 
+
+\begin{equation}
+\Lambda = f \frac{q^2 GM}{a} \left(\frac{a}{r-a}\right)^4\,,
+\end{equation}
+
+Define dimensionless variables as follows:
+
+\begin{align} 
+\tilde{\Sigma} = \frac{\Sigma}{\Sigma_o}\\
+\tilde{t} = \frac{t}{t_o}\\
+\tilde{r} = \frac{r}{r_o}\\
+\tilde{\nu} = \frac{\nu}{\nu_o}\\
+\tilde{T} = \frac{T}{T_o}\\,
+\end{align}
+
+where $\Sigma_o = M_d/r_o^2$, with $M_d$ the initial disk mass, $r_o$ the initial disk radius, $\nu_o$ the characteristic viscosity, and $t_o = r_o^2/\nu_o$, the characteristic viscous timescale.
+
+Then, Eq.\,\ref{eq:diskev} becomes
+
+\begin{equation}
+\frac{\partial \tilde{\Sigma}}{\partial \tilde{t}} = \frac{1}{\tilde{r}} \frac{\partial}{\partial \tilde{r}} \left[3 \tilde{r}^{1/2} \frac{\partial}{\partial \tilde{r}}  \left(\tilde{r}^{1/2} \tilde{\nu}\tilde{\Sigma} \right) - \chi\left(\frac{1}{\tilde{r}\gamma -1} \right)^4\tilde{\Sigma}\,\tilde{r}^{3/2}\right]\,,
+\end{equation}
+
+where
+
+\begin{equation}
+\chi = \frac{2 f q^2}{\nu_o} \frac{\sqrt{G M}}{a} r_o^{3/2}\,
+\end{equation}
+
+ and $\gamma = r_o/a$ with $a$ the semimajor axis. 
+ 
+ The viscosity is 
+ 
+ \begin{equation}
+\nu = \alpha \frac{c_s^2}{\Omega}\,,
+\end{equation}
+
+or equivalently,
+
+\begin{equation}
+\nu = 	\alpha \frac{k_B T}{\mu \Omega}\,.
+\end{equation}
+
+For $a = 0.2$ AU, binary mass $M = 1\,M_{\odot}$, $q=1$, $f = 10^{-3}$, and $r_o = 20$ AU, and $c_s = 1$ km/s $\chi \approx 400$.
+
+We can also define a characteristic temperature,
+
+\begin{equation}
+T_o = \frac{\mu \Omega_o}{\alpha k} \nu_o\,,
+\end{equation}
+
+where $\Omega_o$ is evaluated at $r_o$ and $T_o \approx 200$K for same approximations as for $\chi$.\\\\
+
+\section{Conservation Equations}
+
+The equation for mass conservation is
+
+\begin{equation}
+M = \int 2\pi r \Sigma\, dr\,,
+\end{equation}
+
+and for momentum conservation,
+
+\begin{equation}
+\textit{L} = \int2\pi r \Sigma\, r^2 \Omega\, dr\,.
+\end{equation}
+
+We express the evolution equation in a conservative form, in terms of $\Sigma$ rather than $F_J$. This will facilitate verifying conservation every time step of the numerical procedure.
+
+\section{Initial and Boundary Conditions}
+
+We will set $\Sigma = 0$ for our inner boundary condition. Our outer boundary condition is irrelevant because our solution will never reach it, so we can likewise set $\Sigma = 0$ at our outer boundary condition. 
+
+We can derive a more general inner boundary condition with the hypothesis $\partial \dot{M}/ \partial l = 0$, or equivalently,
+
+\begin{equation}
+\frac{\partial}{\partial l} \left(3 r^{1/2} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right) - \frac{2 \Lambda \Sigma r^{3/2}}{(G M)^{1/2}}\right)= 0\,.
+\end{equation}
+
+The binary torque $\Lambda$ vanishes to 0 at the inner edge. If we further assume that the accretion rate $\dot{M}$ is 0, we get that $\Sigma$ must be a constant, which we can fix to 0 and return our inner boundary condition above.
+
+\section{Steady State Solution}
+
+From Eq.\,\ref{eq:diskev}, we readily identify the accretion rate,
+
+\begin{equation}
+\frac{\dot{M}}{2\pi} = 3 r^{1/2} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right)\,,
+\end{equation}
+
+in the limit where the external torque $\Lambda \rightarrow 0$. To find the steady-state solution, we set the LHS of Eq.\,\ref{eq:diskev} to 0 and integrate to find the surface density,
+
+\begin{equation}
+\Sigma = -\frac{2}{3 \nu} \left(A+  \frac{B}{\sqrt{G M r}}\right)\,,
+\end{equation}
+
+where $A, B$, are integration constants. The integration constant $A$ satisfies the constraint $A = \frac{\dot{M}}{2\pi}$, where the accretion rate $\dot{M}$ is constant. For the standard constant accretion disk, the accretion rate satisfies $\dot{M} = 3\pi \nu \Sigma$, and this constrains the integration constant $B = 0$.
+
+\section{Numerical Method}
+
+We will use FiPy to solve Eq.\,\ref{eq:diskev}. FiPy is a finite volume package for Python, it's typically used to
+solve PDEs that arise from conservation laws in physical sciences and engineering.
+
+\subsection{Disk Evolution}
+Since FiPy only works with conservation equations, we have to cast our evolution equation as a conservation law.
+By inspecting equation \ref{eq:diskev} we can see that it can be written as a conservation law with a convection 
+term as follows
+\begin{equation} \label{eq:conservation}
+\frac{\partial \Sigma}{\partial t} = -\frac{1}{r} \frac{\partial}{\partial r} \left( r \Sigma v_{r}\right)=-\nabla\cdot (\Sigma v_r \bold{e}_{r}),
+\end{equation}
+where
+\begin{equation} \label{eq:vr}
+v_r = -\frac{3}{r^{1/2}\Sigma} \frac{\partial}{\partial r} \left(r^{1/2} \nu \Sigma\right) + \frac{2 \Lambda r^{1/2}}{(G M)^{1/2}}.
+\end{equation}
+This way we have a conservation law. The conserved quantity is $\Sigma$, and the flux is $\Sigma v_r \bold{e}_r$.
+
+The finite volume techinque consists on dividing the volume into small cells where the variable of interest ($\Sigma$) has a constant value,
+and the value of the flux ($\Sigma v_r$) has a constant value at the cells' faces. The geometry of the cells doesn't have to be cartesian, in
+our case we'll use cells shaped like annuli to take advantage of the cylindrical symmetry.
+The discretization is obtained by integrating equation \ref{eq:conservation} over a volume cell and using the divergence theorem on the
+right hand side to get
+\begin{equation} \label{eq:discretization}
+\frac{\Sigma_c(t+\Delta t) V_C - \Sigma_c(t) V_C}{\Delta t} =
+-\sum_{f} \Sigma_{f}(t) v_{rf}(t) A_{f} (\bold{e}_r \cdot \bold{e}_{f}),
+\end{equation}
+where the subscript $c$ means that quantity is evaluated at the cell center and $f$ means the quantity is evaluated at one of the faces,
+$V_C$ is the cell's volume, $A_f$ is the area of face $f$, and $\bold{e}_{f}$ is the normal vector of the face $f$ pointing outwards.
+In our case we only have two faces per cell because the grid is one 
+dimensional.
+
+\subsection{Temperature Interpolation}
+We use the Brent's method in Python to solve the energy conservation equation Eq.\,\ref{eq:encon} together with the prescription for opacity, Eq.\,\ref{eq:op}, to get a table of temperatures for various radii and surface densities. We subsequently smooth the temperature profile using a bivariate spline interpolation. 
+
+\end{document}
