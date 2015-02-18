@@ -32,40 +32,44 @@ def fv(r, T, Sigma):
 def Tirr(r):
     return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
-def op(T, r, Sigma, kappa):
-    if kappa == 1:
-        return 0.0125987 * T**1.5
-    elif kappa == 2:
-        return 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916/T**3.48404
-    elif kappa == 3:
-        return 0.00144313* T**1.5
-    elif kappa == 4:
-        return 5.01187*10**17/T**5.832
-    elif kappa == 5:
-        return 1.14868 *10**-6 *T**2.129
-    elif kappa == 6:
-        return 1.2583*10**135*(Omega(r) * Sigma*(k/mu)**0.5)**1.312/T**42.324
-    elif kappa == 7:
-        return 9.71628 *10**-16*T**4.0625
-    elif kappa == 8:
-        return 8.51138*10**58*(Omega(r) * Sigma *(k/mu)**0.5)**0.676/T**18.142
-    elif kappa == 9:
-        return 1.01158*10**-14*(Omega(r) * Sigma *(k/mu)**0.5)**0.498*T**3.154
-    elif kappa == 10:
-        return 1.15878*10**-41*(Omega(r) * Sigma * (k/mu)**0.5)**0.382*T**10.371
-    elif kappa == 11:
-        return 1.0617*10**12 *(Omega(r) * Sigma * (k/mu)**0.5)**0.928/T**3.824
-    elif kappa == 12:
-        return 10**-.48
+def op(T, r, Sigma, idx):
+    if idx == 1:
+        kappa = 0.0125987 * T**1.5
+    elif idx == 2:
+        kappa = 1.96231 * 10**8 *(Omega(r) * Sigma *(k/mu)**0.5)**0.0949916/T**3.48404
+    elif idx == 3:
+        kappa = 0.00144313* T**1.5
+    elif idx == 4:
+        kappa = 5.01187*10**17/T**5.832
+    elif idx == 5:
+        kappa = 1.14868 *10**-6 *T**2.129
+    elif idx == 6:
+        kappa = 1.2583*10**135*(Omega(r) * Sigma*(k/mu)**0.5)**1.312/T**42.324
+    elif idx == 7:
+        kappa = 9.71628 *10**-16*T**4.0625
+    elif idx == 8:
+        kappa = 8.51138*10**58*(Omega(r) * Sigma *(k/mu)**0.5)**0.676/T**18.142
+    elif idx == 9:
+        kappa = 1.01158*10**-14*(Omega(r) * Sigma *(k/mu)**0.5)**0.498*T**3.154
+    elif idx == 10:
+        kappa = 1.15878*10**-41*(Omega(r) * Sigma * (k/mu)**0.5)**0.382*T**10.371
+    elif idx == 11:
+        kappa = 1.0617*10**12 *(Omega(r) * Sigma * (k/mu)**0.5)**0.928/T**3.824
+    elif idx == 12:
+        kappa = 10**-.48
     else:
-        raise ValueError("Check your kappa input")
+        raise ValueError("Check your idx input")
+
+    if kappa < 1.41254e-17*T**3.586 and T < 1.0e4:
+        kappa = 1.41254e-17*T**3.586
+    return kappa
 
 def func(T, r, Sigma, q, f, kappa):
     return sigma*T**4 - (3*op(T , r, Sigma, kappa)*T**0.5*Sigma*0.0625 + 2/(op(T, r, Sigma,kappa)*Sigma*T**0.5))*(ftid(r,Sigma,q,f) + fv(r,T,Sigma)) - sigma*Tirr(r)**4
 
 def getBracket(r, Sigma, idx):
     if idx == 1:
-        return 0.0, 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
+        return 1.0e-3, 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172
     
     elif idx == 2:
         return 144.958* (Omega(r) * Sigma * (k/mu)**0.5)**0.019172, 171.54*(Omega(r) * Sigma *(k/mu)**0.5)**0.019172
@@ -98,7 +102,7 @@ def getBracket(r, Sigma, idx):
         return 9769.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.040816, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558
     
     elif idx == 12:
-        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 1.0e8
+        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.32558, 5.0e5
     else:
         raise ValueError("Opacity index out of range")
 
@@ -109,7 +113,7 @@ def Tfin(r, Sigma, q, f, idx, delta=0.0):
     except ValueError, e:
         return Tfin(r, Sigma, q, f, idx+1, delta=delta)
     else:
-        if (1.0-delta)*Tmin < T < (1.0+delta)*Tmax:
+        if (1.0-delta)*Tmin <= T <= (1.0+delta)*Tmax:
             return T
         else:
             return Tfin(r, Sigma, q, f, idx+1, delta=delta)
@@ -135,12 +139,15 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=20
             try:
                 temp[i,j] = Tfin(r, Sigma, q, f, 1)
             except ValueError, e:
-                try:
-                    temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.1)
-                except ValueError, e:
-                    try:
-                        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
-                    except ValueError, e:
-                        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.4)
+                print "i={0}, j={1}".format(i, j)
+                print "r={0} AU, Sigma={1}".format(r/AU, Sigma)
+                #try:
+                #temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.1)
+                #except ValueError, e:
+                #    try:
+                #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
+                #    except ValueError, e:
+                #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.4)
+                raise
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp)
