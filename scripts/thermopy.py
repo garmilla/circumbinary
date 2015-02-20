@@ -138,14 +138,14 @@ def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=20
     for i, r in enumerate(rGrid):
         for j, Sigma in enumerate(SigmaGrid):
             try:
-                idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.07)
+                idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1)
             except ValueError, e:
-                temp[i,j] = np.nan
-                idxs[-j,i] = 0
-                #except ValueError, e:
-                #    try:
-                #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
-                #    except ValueError, e:
-                #        temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.4)
+                try:
+                    idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.07)
+                except ValueError, e:
+                    try:
+                        idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
+                    except ValueError, e:
+                        raise
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp), idxs
