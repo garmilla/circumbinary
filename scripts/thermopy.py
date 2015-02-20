@@ -60,8 +60,13 @@ def op(T, r, Sigma, idx):
     else:
         raise ValueError("Check your idx input")
 
-    if kappa < 1.41254e-17*T**3.586 and T < 1.0e4:
-        kappa = 1.41254e-17*T**3.586
+    try:
+        if kappa < 1.41254e-17*T**3.586 and T < 1.0e4:
+            kappa = 1.41254e-17*T**3.586
+    except:
+        floor = np.logical_and(T < 1.0e4, kappa < 1.41254e-17*T**3.586)
+        if np.sum(floor) > 0:
+            kappa[floor] = 1.41254e-17*T[floor]**3.586
     return kappa
 
 def func(T, r, Sigma, q, f, kappa):
