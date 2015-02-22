@@ -123,7 +123,7 @@ def Tfin(r, Sigma, q, f, idx, delta=0.0):
         else:
             return Tfin(r, Sigma, q, f, idx+1, delta=delta)
 
-def buildTempTable(rGrid, q=1.0, f=0.001, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, delta=0.1, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, delta=0.1, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
