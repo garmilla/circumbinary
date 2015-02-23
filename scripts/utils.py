@@ -188,11 +188,14 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         r = circ.r*circ.gamma*a # Dimensional radius
         T = circ.T.value
         kappa = np.zeros(T.shape)
+        solved = np.zeros(T.shape, dtype=bool)
         for idx in range(1, 13):
             Tmin, Tmax = thm.getBracket(r, Sigma, idx)
             good = np.logical_and(True, T > Tmin)
             good = np.logical_and(good, T < Tmax)
-            kappa[good] = thm.op(T[good], r[good], Sigma[good], idx)
+            update = np.logical_and(good, np.logical_not(solved))
+            kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
+            solved[update] = True
 
         if logLog:
             axSigma.loglog(circ.r, np.maximum(sigMin, Sigma), color=_colors[i%7])
