@@ -201,7 +201,8 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axSigma.loglog(circ.r, np.maximum(sigMin, Sigma), color=_colors[i%7])
             axT.loglog(circ.r, circ.T.value, color=_colors[i%7])
             axOp.loglog(circ.r, kappa, color=_colors[i%7])
-            axTau.loglog(circ.r, np.maximum(kappa*sigMin, kappa*Sigma), color=_colors[i%7])
+            #axTau.loglog(circ.r, np.maximum(kappa*sigMin, kappa*Sigma), color=_colors[i%7])
+            axTau.loglog(circ.r, kappa*Sigma, color=_colors[i%7])
         else:
             axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
             axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
