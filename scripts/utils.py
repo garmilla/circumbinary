@@ -184,7 +184,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         circ.loadTime(t)
         print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
         Sigma = circ.dimensionalSigma()
-        Sigma = np.maximum(sigMin, Sigma)
+        #Sigma = np.maximum(sigMin, Sigma)
         r = circ.r*circ.gamma*a # Dimensional radius
         T = circ.T.value
         kappa = np.zeros(T.shape)
