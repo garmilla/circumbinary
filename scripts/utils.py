@@ -148,7 +148,7 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
 
 def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
-    Plot panel with Sigma, temperature, and FJ
+    Plot panel with opacity
     """
     fig = plt.figure()
 
