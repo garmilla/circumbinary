@@ -264,7 +264,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     
     def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
-    Plot iceline
+    Plot panel with Sigma, temperature, and FJ
     """
     fig = plt.figure()
 
