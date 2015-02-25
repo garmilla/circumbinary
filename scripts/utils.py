@@ -313,12 +313,12 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axice.loglog(circ.r, Sigma, color=_colors[i%7])
             axice.axvline(circ.r[iceline], color=_colors[i%7])
             axT.loglog(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[iceline], color=_colors[%i7])
+            axT.axvline(circ.r[iceline], color=_colors[i%7])
          
         else:
             axice.semilogx(circ.r, Sigma, color=_colors[i%7])
             axice.axvline(circ.r[iceline], color=_colors[i%7])
             axT.semilogx(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[iceline], color=_colors[%i7])
+            axT.axvline(circ.r[iceline], color=_colors[i%7])
    
     return fig
