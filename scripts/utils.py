@@ -249,11 +249,11 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
         if logLog:
             axtid.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
-            axvis.loglog(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
+            axvisc.loglog(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
             axirr.loglog(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
         else:
             axirr.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
-            axvis.semilogx(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
+            axvisc.semilogx(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
             axirr.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
 
     return fig
