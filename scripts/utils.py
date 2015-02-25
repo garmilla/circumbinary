@@ -209,3 +209,51 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axTau.semilogx(circ.r, kappa*Sigma, color=_colors[i%7])
 
     return fig
+
+def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+    """
+        Plot panel with various heating terms
+        """
+    fig = plt.figure()
+    
+    if times == None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
+    
+    if xlim==None:
+        xlim=(circ.r[0], 1.0e5*circ.r[0])
+
+    axtid = plt.subplot(3,1,1)
+    axvisc = plt.subplot(3,1,2)
+    axirr = plt.subplot(3,1,3)
+
+    axtid.set_ylabel("Tidal Heating")
+    axtid.set_xlabel("r/r0")
+    axvisc.set_ylabel("Viscous Heating")
+    axvisc.set_xlabel("r/r0")
+    axirr.set_ylabel("Irradiation")
+    axirr.set_xlabel("r/r0")
+
+    axtid.set_xlim(xlim)
+    axvisc.set_xlim(xlim)
+    axirr.set_xlim(xlim)
+
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+            print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+            Sigma = circ.dimensionalSigma()
+            T = circ.T.value
+
+
+        if logLog:
+            axtid.loglog(circ.r,ftid(circ.r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
+            axvis.loglog(circ.r,thm.fv(circ.r,T,Sigma),color=_colors[i%7])
+            axirr.loglog(circ.r,sigma*thm.Tirr(circ.r)**4,color=_colors[i%7])
+        else:
+            axirr.semilogx(circ.r,sigma*thm.Tirr(circ.r)**4,color=_colors[i%7])
+            axvis.semilogx(circ.r,thm.fv(circ.r,T,Sigma),color=_colors[i%7])
+            axirr.semilogx(circ.r,sigma*thm.Tirr(circ.r)**4,color=_colors[i%7])
+
+    return fig
