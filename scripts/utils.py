@@ -242,9 +242,9 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
     for i, t in enumerate(times):
         circ.loadTime(t)
-            print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
-            Sigma = circ.dimensionalSigma()
-            T = circ.T.value
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+        Sigma = circ.dimensionalSigma()
+        T = circ.T.value
 
 
         if logLog:
