@@ -277,14 +277,16 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
 
-    axice = plt.subplot(1, 1, 1)
-
+    axice = plt.subplot(2, 1, 1)
+    axT = plt.subplot(2, 1, 2)
 
     axice.set_ylabel("Sigma (g/cm^2)")
     axice.set_xlabel("r/r0")
-   
+    axT.set_ylabel("T (K)")
+    axT.set_xlabel("r/r0")
 
     axice.set_xlim(xlim)
+    axT.set_xlim(xlim)
   
     for i, t in enumerate(times):
         circ.loadTime(t)
@@ -310,9 +312,13 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         if logLog:
             axice.loglog(circ.r, Sigma, color=_colors[i%7])
             axice.axvline(circ.r[iceline], color=_colors[i%7])
+            axT.loglog(circ.r, T, color=_colors[i%7])
+            axT.axvline(circ.r[iceline], color=_colors[%i7])
          
         else:
             axice.semilogx(circ.r, Sigma, color=_colors[i%7])
             axice.axvline(circ.r[iceline], color=_colors[i%7])
+            axT.semilogx(circ.r, T, color=_colors[i%7])
+            axT.axvline(circ.r[iceline], color=_colors[%i7])
    
     return fig
