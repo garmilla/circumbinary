@@ -261,3 +261,58 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axirr.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
 
     return fig
+    
+    def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+    """
+    Plot iceline
+    """
+    fig = plt.figure()
+
+    if times == None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
+
+    if xlim==None:
+        xlim=(circ.r[0], 1.0e5*circ.r[0])
+
+    axice = plt.subplot(1, 1, 1)
+
+
+    axice.set_ylabel("Ice Line")
+    axice.set_xlabel("r/r0")
+   
+
+    axice.set_xlim(xlim)
+  
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+        Sigma = circ.dimensionalSigma()
+        Sigma = np.maximum(sigMin, Sigma)
+        r = circ.r*circ.gamma*a # Dimensional radius
+        T = circ.T.value
+        kappa = np.zeros(T.shape)
+        idxtab = np.zeros(T.shape)
+        solved = np.zeros(T.shape, dtype=bool)
+        for idx in range(1, 13):
+            Tmin, Tmax = thm.getBracket(r, Sigma, idx)
+            good = np.logical_and(True, T > Tmin)
+            good = np.logical_and(good, T < Tmax)
+            update = np.logical_and(good, np.logical_not(solved))
+            kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
+            idxtab[update] = idx
+            solved[update] = True
+        
+        iceline = np.where((idxtab < 3) & (idxtab >1))[0][0]
+        
+        if logLog:
+            axice.loglog(circ.r, Sigma, color=_colors[i%7])
+            axice.axvline(circ.r[iceline], color=_colors[i%7])
+         
+        else:
+            axice.semilogx(circ.r, Sigma, color=_colors[i%7])
+            axice.axvline(circ.r[iceline], color=_colors[i%7])
+   
+    return fig
