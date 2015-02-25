@@ -229,7 +229,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axvisc = plt.subplot(3,1,2)
     axirr = plt.subplot(3,1,3)
 
-    axtid.set_ylabel("Tidal (erg/cm^2/s")
+    axtid.set_ylabel("Tidal (erg/cm^2/s)")
     axtid.set_xlabel("r/r0")
     axvisc.set_ylabel("Viscous")
     axvisc.set_xlabel("r/r0")
