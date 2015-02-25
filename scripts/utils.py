@@ -248,7 +248,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
 
         if logLog:
-            axtid.loglog(circ.r,ftid(circ.r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
+            axtid.loglog(circ.r,thm.ftid(circ.r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
             axvis.loglog(circ.r,thm.fv(circ.r,T,Sigma),color=_colors[i%7])
             axirr.loglog(circ.r,sigma*thm.Tirr(circ.r)**4,color=_colors[i%7])
         else:
