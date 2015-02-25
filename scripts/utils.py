@@ -305,7 +305,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
         
-        iceline = np.where((idxtab < 3) & (idxtab >1))[0][0]
+        iceline = np.where((idxtab < 3) & (idxtab >1))[0][-1]
         
         if logLog:
             axice.loglog(circ.r, Sigma, color=_colors[i%7])
