@@ -280,7 +280,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axice = plt.subplot(1, 1, 1)
 
 
-    axice.set_ylabel("Ice Line")
+    axice.set_ylabel("Sigma (g/cm^2)")
     axice.set_xlabel("r/r0")
    
 
