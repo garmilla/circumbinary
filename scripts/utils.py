@@ -211,9 +211,9 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     return fig
 
 def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
-        """
-        Plot panel with various heating terms
-        """
+    """
+    Plot panel with various heating terms
+    """
     fig = plt.figure()
     
     if times == None:
@@ -262,10 +262,10 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
     return fig
     
-    def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
-        """
-        Plot iceline
-        """
+def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+    """
+    Plot iceline
+    """
     fig = plt.figure()
 
     if times == None:
