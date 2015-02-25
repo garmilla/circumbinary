@@ -240,9 +240,9 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axvisc.set_xlim(xlim)
     axirr.set_xlim(xlim)
 
-    axtid.set_ylim(bottom = 1.0e-5)
-    axvisc.set_ylim(1.0e-5)
-    axirr.set_ylim(1.0e-5)
+    axtid.set_ylim(1.0e-5, 1e2)
+    axvisc.set_ylim(1.0e-5, 1e2)
+    axirr.set_ylim(1.0e-5, 1e2)
 
     for i, t in enumerate(times):
         circ.loadTime(t)
