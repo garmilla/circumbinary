@@ -229,20 +229,20 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axvisc = plt.subplot(3,1,2)
     axirr = plt.subplot(3,1,3)
 
-    axtid.set_ylabel("Tidal Heating (erg/cm^2/s")
+    axtid.set_ylabel("Tidal (erg/cm^2/s")
     axtid.set_xlabel("r/r0")
-    axvisc.set_ylabel("Viscous Heating (erg/cm^2/s)")
+    axvisc.set_ylabel("Viscous")
     axvisc.set_xlabel("r/r0")
-    axirr.set_ylabel("Irradiation (erg/cm^2/s)")
+    axirr.set_ylabel("Irradiation")
     axirr.set_xlabel("r/r0")
 
     axtid.set_xlim(xlim)
     axvisc.set_xlim(xlim)
     axirr.set_xlim(xlim)
 
-    axtid.set_ylim(1.0e-3, 1e8)
-    axvisc.set_ylim(1.0e-3, 1e8)
-    axirr.set_ylim(1.0e-3, 1e8)
+    axtid.set_ylim(1.0e-0, 1e8)
+    axvisc.set_ylim(1.0e-0, 1e8)
+    axirr.set_ylim(1.0e-0 , 1e8)
 
     for i, t in enumerate(times):
         circ.loadTime(t)
