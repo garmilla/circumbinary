@@ -245,13 +245,13 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         r = circ.r*circ.gamma*a # Dimensional radius
 
         if logLog:
-            axheat.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
-            axheat.loglog(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
-            axheat.loglog(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
+            axheat.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color= 'r'])
+            axheat.loglog(circ.r,thm.fv(r,T,Sigma),color='b')
+            axheat.loglog(circ.r,sigma*thm.Tirr(r)**4,color='g')
         else:
-            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
-            axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
-            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color ='r')
+            axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color='b')
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color='g')
 
     return fig
     
