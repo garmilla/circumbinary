@@ -9,13 +9,16 @@ import thermopy as thm
 
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
+        
         Pickle is python's built-in object serialization.  This decorator, when
         used on a function, saves the results of the computation in the function
         to a pickle file.  If the function is called a second time with the
         same inputs, then the computation will not be repeated and the previous
         results will be used.
+        
         This functionality is useful for computations which take a long time,
         but will need to be repeated (such as the first step of a data analysis).
+        
         Parameters
         ----------
         filename : string (optional)
@@ -25,6 +28,7 @@ def pickle_results(filename=None, verbose=True):
         verbose : boolean (optional)
         if True, then print a message to standard out specifying when the
         pickle file is written or read.
+        
         Examples
         --------
         >>> @pickle_results('tmp.pkl', verbose=True)
@@ -59,46 +63,47 @@ def pickle_results(filename=None, verbose=True):
             
             try:
                 args_match = (args == Dargs)
-    except:
-        args_match = np.all([np.all(a1 == a2)
+            except:
+                args_match = np.all([np.all(a1 == a2)
                              for (a1, a2) in zip(Dargs, args)])
             
             try:
                 kwargs_match = (kwargs == Dkwargs)
-                             except:
+            except:
                 kwargs_match = ((sorted(Dkwargs.keys())
                                  == sorted(kwargs.keys()))
                                 and (np.all([np.all(Dkwargs[key]
                                                     == kwargs[key])
                                              for key in kwargs])))
                     
-                             if (type(D) == dict and D.get('funcname') == f.__name__
-                                 and args_match and kwargs_match):
-                                             if verbose:
-                                                 print("@pickle_results: using precomputed "
-                                                       "results from '%s'" % filename)
-                                             retval = D['retval']
+            if (type(D) == dict and D.get('funcname') == f.__name__
+                    and args_match and kwargs_match):
+                if verbose:
+                    print("@pickle_results: using precomputed "
+                            "results from '%s'" % filename)
+                retval = D['retval']
                                                  
-                                                 else:
-                                                     if verbose:
-                                                         print("@pickle_results: computing results "
-                                                               "and saving to '%s'" % filename)
-                                                             if cache_exists:
-                                                                 print("  warning: cache file '%s' exists" % filename)
-                                                                     print("    - args match:   %s" % args_match)
-                                                                         print("    - kwargs match: %s" % kwargs_match)
-                                                                             retval = f(*args, **kwargs)
+            else:
+                if verbose:
+                    print("@pickle_results: computing results "
+                            "and saving to '%s'" % filename)
+                    if cache_exists:
+                        print("  warning: cache file '%s' exists" % filename)
+                        print("    - args match:   %s" % args_match)
+                        print("    - kwargs match: %s" % kwargs_match)
+                retval = f(*args, **kwargs)
                                                                                  
-                                                                                 funcdict = dict(funcname=f.__name__, retval=retval,
-                                                                                                 args=args, kwargs=kwargs)
-                                                                                     with open(filename, 'wb') as outfile:
-                                                                                         pickle.dump(funcdict, outfile)
+                funcdict = dict(funcname=f.__name__, retval=retval,
+                                args=args, kwargs=kwargs)
+                with open(filename, 'wb') as outfile:
+                    pickle.dump(funcdict, outfile)
                                                                                              
-                                                                                             return retval
-                                                                                                 return new_f
-                                                                                             return pickle_func
+            return retval
+        return new_f
+    return pickle_func
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
+
 def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, FMin=1.0e35):
     """
         Plot panel with Sigma, temperature, and FJ
