@@ -358,9 +358,11 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
         iceline[i] = np.where((idxtab < 3) & (idxtab > 1))[0][-1]
-    
-    for ind in iceline:
-        rad = circ.r[ind]
+
+    rad = np.zeros(times.shape)
+
+    for i, ind in iceline:
+        rad[i] = circ.r[ind]
 
     if logLog:
         axice.loglog(circ.r, rad)
