@@ -366,8 +366,8 @@ def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.000
     for ind in iceline:
         rad = circ.r[ind]
 
-if logLog:
-    axice.loglog(circ.r, rad)
+    if logLog:
+        exaxice.loglog(circ.r, rad)
     
     else:
         axice.semilogx(circ.r, rad)
