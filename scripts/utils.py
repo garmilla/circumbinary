@@ -361,7 +361,7 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
 
     rad = np.zeros(times.shape)
 
-    for i, ind in iceline:
+    for i, ind in enumerate(iceline):
         rad[i] = circ.r[ind]
 
     if logLog:
