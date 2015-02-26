@@ -329,7 +329,7 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.times[0], circ.times[-1])
 
-    axice = plt.subplot(2, 1, 1)
+    axice = plt.subplot(1, 1, 1)
     
     axice.set_ylabel("Iceline (cm)")
     axice.set_xlabel("r/r0")
