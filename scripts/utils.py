@@ -318,20 +318,16 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     return fig
 
 
-def ploticeline(circ, xlim=None, times=None, logLog=True, sigMin=0.0001):
+def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     """
         Plot iceline
         """
     fig = plt.figure()
     
-    if times == None:
-        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
-        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
-    else:
-        times = circ.dimensionlessTime(np.array(times))
-    
+    times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), len(circ.times))
+
     if xlim==None:
-        xlim=(circ.r[0], 1.0e5*circ.r[0])
+        xlim=(circ.times[0], circ.times[-1])
 
     axice = plt.subplot(2, 1, 1)
     
