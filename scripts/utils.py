@@ -225,24 +225,17 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
 
-    axtid = plt.subplot(3,1,1)
-    axvisc = plt.subplot(3,1,2)
-    axirr = plt.subplot(3,1,3)
+    axheat= plt.subplot(1,1,1)
+    
 
-    axtid.set_ylabel("Tidal (erg/cm^2/s)")
-    axtid.set_xlabel("r/r0")
-    axvisc.set_ylabel("Viscous")
-    axvisc.set_xlabel("r/r0")
-    axirr.set_ylabel("Irradiation")
-    axirr.set_xlabel("r/r0")
+    axheat.set_ylabel("Heating Terms (erg/cm^2/s)")
+    axheat.set_xlabel("r/r0")
 
-    axtid.set_xlim(xlim)
-    axvisc.set_xlim(xlim)
-    axirr.set_xlim(xlim)
 
-    axtid.set_ylim(1.0e-0, 1.0e8)
-    axvisc.set_ylim(1.0e-0,1.0e8)
-    axirr.set_ylim(1.0e-0 , 1.0e8)
+    axheat.set_xlim(xlim)
+
+    axheat.set_ylim(1.0e-0, 1.0e8)
+
 
     for i, t in enumerate(times):
         circ.loadTime(t)
@@ -252,13 +245,13 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         r = circ.r*circ.gamma*a # Dimensional radius
 
         if logLog:
-            axtid.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
-            axvisc.loglog(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
-            axirr.loglog(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
+            axheat.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color=_colors[i%7])
+            axheat.loglog(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
+            axheat.loglog(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
         else:
-            axirr.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
-            axvisc.semilogx(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
-            axirr.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
+            axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color=_colors[i%7])
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color=_colors[i%7])
 
     return fig
     
@@ -307,7 +300,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
         
-        iceline = np.where((idxtab < 3) & (idxtab >1))[0][-1]
+        iceline = np.where((idxtab < 3) & (idxtab > 1))[0][-1]
         
         if logLog:
             axice.loglog(circ.r, Sigma, color=_colors[i%7])
