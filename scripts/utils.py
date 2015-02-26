@@ -318,7 +318,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     return fig
 
 
-def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+def ploticeline(circ, xlim=None, times=None, logLog=True, sigMin=0.0001):
     """
         Plot iceline
         """
@@ -367,7 +367,7 @@ def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.000
         rad = circ.r[ind]
 
     if logLog:
-        exaxice.loglog(circ.r, rad)
+        axice.loglog(circ.r, rad)
     
     else:
         axice.semilogx(circ.r, rad)
