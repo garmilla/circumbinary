@@ -9,16 +9,13 @@ import thermopy as thm
 
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
-        
         Pickle is python's built-in object serialization.  This decorator, when
         used on a function, saves the results of the computation in the function
         to a pickle file.  If the function is called a second time with the
         same inputs, then the computation will not be repeated and the previous
         results will be used.
-        
         This functionality is useful for computations which take a long time,
         but will need to be repeated (such as the first step of a data analysis).
-        
         Parameters
         ----------
         filename : string (optional)
@@ -28,7 +25,6 @@ def pickle_results(filename=None, verbose=True):
         verbose : boolean (optional)
         if True, then print a message to standard out specifying when the
         pickle file is written or read.
-        
         Examples
         --------
         >>> @pickle_results('tmp.pkl', verbose=True)
@@ -273,7 +269,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axice = plt.subplot(2, 1, 1)
     axT = plt.subplot(2, 1, 2)
 
-    axice.set_ylabel("Sigma (g/cm^2)")
+axice.set_ylabel("Sigma (g/cm^2)")
     axice.set_xlabel("r/r0")
     axT.set_ylabel("T (K)")
     axT.set_xlabel("r/r0")
@@ -315,59 +311,3 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axT.axvline(circ.r[iceline], color=_colors[i%7])
 
 return fig
-
-def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
-    """
-        Plot iceline
-        """
-    fig = plt.figure()
-    
-    if times == None:
-        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
-        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
-    else:
-        times = circ.dimensionlessTime(np.array(times))
-    
-    if xlim==None:
-        xlim=(circ.r[0], 1.0e5*circ.r[0])
-    
-    axice = plt.subplot(2, 1, 1)
-    
-    axice.set_ylabel("Iceline (cm)")
-    axice.set_xlabel("r/r0")
-    axT.set_ylabel("T (K)")
-
-    
-    axice.set_xlim(xlim)
-    
-    iceline = np.zeros(times.shape)
-
-    for i, t in enumerate(times):
-        circ.loadTime(t)
-        Sigma = circ.dimensionalSigma()
-        Sigma = np.maximum(sigMin, Sigma)
-        r = circ.r*circ.gamma*a # Dimensional radius
-        T = circ.T.value
-        kappa = np.zeros(T.shape)
-        idxtab = np.zeros(T.shape)
-        solved = np.zeros(T.shape, dtype=bool)
-        for idx in range(1, 13):
-            Tmin, Tmax = thm.getBracket(r, Sigma, idx)
-            good = np.logical_and(True, T > Tmin)
-            good = np.logical_and(good, T < Tmax)
-            update = np.logical_and(good, np.logical_not(solved))
-            kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
-            idxtab[update] = idx
-            solved[update] = True
-        iceline[i] = np.where((idxtab < 3) & (idxtab > 1))[0][-1]
-
-    for ind in iceline:
-        rad = circ.r[ind]
-
-    if logLog:
-        axice.loglog(circ.r, rad)
-           
-    else:
-        axice.semilogx(circ.r, rad)
-
-    return fig
