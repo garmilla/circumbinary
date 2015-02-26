@@ -365,9 +365,9 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
         rad[i] = circ.r[ind]
 
     if logLog:
-        axice.loglog(circ.r, rad)
+        axice.loglog(circ.times, rad)
     
     else:
-        axice.semilogx(circ.r, rad)
+        axice.semilogx(circ.times, rad)
 
     return fig
