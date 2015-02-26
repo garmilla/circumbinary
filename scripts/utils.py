@@ -340,7 +340,7 @@ def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.000
     axT.set_ylabel("T (K)")
 
 
-axice.set_xlim(xlim)
+    axice.set_xlim(xlim)
     
     iceline = np.zeros(times.shape)
     
