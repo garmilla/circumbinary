@@ -209,7 +209,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axOp.semilogx(circ.r, kappa, color=_colors[i%7])
             axTau.semilogx(circ.r, kappa*Sigma, color=_colors[i%7])
 
-return fig
+    return fig
 
 def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
@@ -254,7 +254,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color='b')
             axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color='g')
 
-return fig
+    return fig
 
 def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
@@ -315,7 +315,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axT.semilogx(circ.r, T, color=_colors[i%7])
             axT.axvline(circ.r[iceline], color=_colors[i%7])
 
-return fig
+    return fig
 
 
 def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
@@ -372,4 +372,4 @@ def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.000
     else:
         axice.semilogx(circ.r, rad)
 
-return fig
+    return fig
