@@ -123,7 +123,7 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
     axT = plt.subplot(3, 1, 2)
     axFJ = plt.subplot(3, 1, 3)
 
-axSigma.set_ylabel("Sigma")
+    axSigma.set_ylabel("Sigma")
     axT.set_ylabel("T")
     axFJ.set_ylabel("FJ")
     axFJ.set_xlabel("r/r0")
@@ -167,7 +167,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axOp = plt.subplot(2, 2, 3)
     axTau = plt.subplot(2, 2, 4)
 
-axSigma.set_ylabel("Sigma")
+    axSigma.set_ylabel("Sigma")
     axSigma.set_xlabel("r/r0")
     axT.set_ylabel("T")
     axT.set_xlabel("r/r0")
@@ -229,7 +229,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axheat= plt.subplot(1,1,1)
 
 
-axheat.set_ylabel("Heating Terms (erg/cm^2/s)")
+    axheat.set_ylabel("Heating Terms (erg/cm^2/s)")
     axheat.set_xlabel("r/r0")
     
     
@@ -274,7 +274,7 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axice = plt.subplot(2, 1, 1)
     axT = plt.subplot(2, 1, 2)
 
-axice.set_ylabel("Sigma (g/cm^2)")
+    axice.set_ylabel("Sigma (g/cm^2)")
     axice.set_xlabel("r/r0")
     axT.set_ylabel("T (K)")
     axT.set_xlabel("r/r0")
@@ -337,7 +337,7 @@ def ploticeline(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.000
     
     axice.set_ylabel("Iceline (cm)")
     axice.set_xlabel("r/r0")
-  
+
 
 
     axice.set_xlim(xlim)
