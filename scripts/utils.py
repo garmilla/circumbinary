@@ -337,7 +337,7 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     axice.set_xlabel("Time (MY)")
     axTice.set_ylabel("T (K)")
     axTice.set_xlabel("Time (MY)")
-    axSigmaice.set_ylabel("Sigma(g/cm^2)")
+    axSigmaice.set_ylabel("Sigma (g/cm^2)")
     axSigmaice.set_xlabel("Time (MY)")
 
     axice.set_xlim(xlim)
