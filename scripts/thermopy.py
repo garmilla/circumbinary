@@ -107,7 +107,7 @@ def getBracket(r, Sigma, idx):
         return 9767.78 * (Omega(r) * Sigma * (k/mu)**0.5)**0.0408163, 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.325581
     
     elif idx == 12:
-        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.325581, 5.0e6
+        return 19529.8 *(Omega(r) * Sigma * (k/mu)**0.5)**0.325581, 5.0e7
     else:
         raise ValueError("Opacity index out of range")
 
@@ -123,7 +123,7 @@ def Tfin(r, Sigma, q, f, idx, delta=0.0):
         else:
             return Tfin(r, Sigma, q, f, idx+1, delta=delta)
 
-def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e4, Sigres=2000, delta=0.1, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e6, Sigres=2000, delta=0.1, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
