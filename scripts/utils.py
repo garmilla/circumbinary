@@ -336,7 +336,7 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     axice.set_ylabel("Iceline (AU)")
     axice.set_xlabel("Time (MY)")
     axTice.set_ylabel("Iceline T (K)")
-    axtice.set_xlabel("Time (MY)")
+    axTice.set_xlabel("Time (MY)")
     axSigmaice.set_ylabel("Iceline Sigma(g/cm^2)")
     axSigmaice.set_xlabel("Time (MY)")
 
@@ -376,10 +376,10 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
 
     if logLog:
         axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
-        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Tice)
-        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
+        axTice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Tice)
+        axSigmaice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
     else:
         axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
-        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Tice)
-        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
+        axTice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Tice)
+        axSigmaice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
     return fig
