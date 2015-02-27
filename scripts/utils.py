@@ -372,7 +372,7 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     for i, ind in enumerate(iceline):
         rad[i] = circ.r[ind]
         Tice[i] = circ.T.value[ind]
-        Sigmaice = circ.dimensionalSigma()[ind]
+        Sigmaice[i] = circ.dimensionalSigma()[ind]
 
     if logLog:
         axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
