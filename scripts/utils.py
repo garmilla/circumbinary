@@ -329,16 +329,24 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.times[0], circ.times[-1])
 
-    axice = plt.subplot(1, 1, 1)
+    axice = plt.subplot(3, 1, 1)
+    axTice = plt.subplot(3, 1, 2)
+    axSigmaice = plt.subplot(3, 1, 3)
     
     axice.set_ylabel("Iceline (AU)")
     axice.set_xlabel("Time (MY)")
-
-
+    axTice.set_ylabel("Iceline T (K)")
+    axtice.set_xlabel("Time (MY)")
+    axSigmaice.set_ylabel("Iceline Sigma(g/cm^2)")
+    axSigmaice.set_xlabel("Time (MY)")
 
     axice.set_xlim(xlim)
+    axTice.set_xlim(xlim)
+    axSigmaice.set_xlim(xlim)
     
     iceline = np.zeros(times.shape)
+    Tice = np.zeros(times.shape)
+    Sigmaice = np.zeros(times.shape)
     
     for i, t in enumerate(times):
         circ.loadTime(t)
@@ -363,11 +371,15 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
 
     for i, ind in enumerate(iceline):
         rad[i] = circ.r[ind]
+        Tice[i] = circ.T.value[ind]
+        Sigmaice = circ.dimensionalSigma()[ind]
 
     if logLog:
         axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
-    
+        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Tice)
+        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
     else:
         axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
-
+        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Tice)
+        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
     return fig
