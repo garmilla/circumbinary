@@ -347,6 +347,8 @@ if __name__ == '__main__':
              description="Script that solves the convection problem in a cylindrical grid")
     parser.add_argument('--rmax', default=1.0e4, type=float,
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
+    parser.add_argument('--Sigmax', default=1.0e4, type=float,
+                        help='Maximum suface density allowed.')
     parser.add_argument('--ncell', default=300, type=int,
                         help='The number of cells to use in the grid')
     parser.add_argument('--dt', default=1.0e-6, type=float,
