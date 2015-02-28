@@ -419,9 +419,9 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
         rad[i] = circ.r[ind]
     
     if logLog:
-        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+        axtrunc.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
     else:
-        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+        axtrunc.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
 
     
     return fig
