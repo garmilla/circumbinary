@@ -162,10 +162,11 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
     
-    axSigma = plt.subplot(2, 2, 1)
-    axT = plt.subplot(2, 2, 2)
-    axOp = plt.subplot(2, 2, 3)
-    axTau = plt.subplot(2, 2, 4)
+    axSigma = plt.subplot(3, 2, 1)
+    axT = plt.subplot(3, 2, 2)
+    axOp = plt.subplot(3, 2, 3)
+    axTau = plt.subplot(3, 2, 4)
+    axidx = plt.subplot(3 ,2 5)
 
     axSigma.set_ylabel("Sigma")
     axSigma.set_xlabel("r/r0")
@@ -175,11 +176,14 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axOp.set_xlabel("r/r0")
     axTau.set_ylabel("$\\tau$")
     axTau.set_xlabel("r/r0")
+    axidx.set_ylabel("Index")
+    axidx.set_xlabel("r/r0")
     
     axSigma.set_xlim(xlim)
     axT.set_xlim(xlim)
     axOp.set_xlim(xlim)
     axTau.set_xlim(xlim)
+    axidx.set_xlim(xlim)
     
     for i, t in enumerate(times):
         circ.loadTime(t)
@@ -190,6 +194,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         T = circ.T.value
         kappa = np.zeros(T.shape)
         solved = np.zeros(T.shape, dtype=bool)
+        index = thm.buildTempTable([r])[3]
         for idx in range(1, 13):
             Tmin, Tmax = thm.getBracket(r, Sigma, idx)
             good = np.logical_and(True, T > Tmin)
@@ -203,11 +208,13 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axT.loglog(circ.r, circ.T.value, color=_colors[i%7])
             axOp.loglog(circ.r, kappa, color=_colors[i%7])
             axTau.loglog(circ.r, np.maximum(kappa*sigMin, kappa*Sigma), color=_colors[i%7])
+            axidx.loglog(circ.r,index, color=_colors[i%7])
         else:
             axSigma.semilogx(circ.r, Sigma, color=_colors[i%7])
             axT.semilogx(circ.r, circ.T.value, color=_colors[i%7])
             axOp.semilogx(circ.r, kappa, color=_colors[i%7])
             axTau.semilogx(circ.r, kappa*Sigma, color=_colors[i%7])
+            axidx.loglog(circ.r,index, color=_colors(i%7))
 
     return fig
 
