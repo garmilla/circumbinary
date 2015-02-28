@@ -166,7 +166,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axT = plt.subplot(3, 2, 2)
     axOp = plt.subplot(3, 2, 3)
     axTau = plt.subplot(3, 2, 4)
-    axidx = plt.subplot(3 ,2 5)
+    axidx = plt.subplot(3 ,2, 5)
 
     axSigma.set_ylabel("Sigma")
     axSigma.set_xlabel("r/r0")
