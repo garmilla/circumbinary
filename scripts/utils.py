@@ -429,7 +429,7 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
         axplat.loglog(circ.dimensionalTime(circ.times)/1.0e6, plat)
     else:
         axtrunc.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
-        axtrunc.semilogx(circ.dimensionalTime(circ.times)/1.0e6, plat)
+        axplat.semilogx(circ.dimensionalTime(circ.times)/1.0e6, plat)
 
     
     return fig
