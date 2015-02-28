@@ -194,7 +194,7 @@ def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         T = circ.T.value
         kappa = np.zeros(T.shape)
         solved = np.zeros(T.shape, dtype=bool)
-        index = thm.buildTempTable([r])[3]
+        index = thm.buildTempTable(r)[3]
         for idx in range(1, 13):
             Tmin, Tmax = thm.getBracket(r, Sigma, idx)
             good = np.logical_and(True, T > Tmin)
