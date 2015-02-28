@@ -413,7 +413,7 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
         r = circ.r*circ.gamma*a # Dimensional radius
         trunc[i] = np.where(FJ > 0.1*np.max(FJ))[0][-1]
 
-
+    rad = np.zeros(times.shape)
     
     for i, ind in enumerate(trunc):
         rad[i] = circ.r[ind]
