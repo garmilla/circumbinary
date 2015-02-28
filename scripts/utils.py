@@ -382,4 +382,46 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
         axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
         axTice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Tice)
         axSigmaice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, Sigmaice)
+
+    return fig
+
+def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
+    """
+        Plot truncation radius
+        """
+    fig = plt.figure()
+    
+    times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), len(circ.times))
+    
+    if xlim==None:
+        xlim=(circ.times[0], circ.times[-1])
+    
+    axtrunc= plt.subplot(1, 1, 1)
+
+    
+    axtrunc.set_ylabel("Truncation Radius (AU)")
+    axtrunc.set_xlabel("Time (MY)")
+
+
+    axtrunc.set_xlim(xlim)
+
+    trunc = np.zeros(times.shape)
+    
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        FJ = circ.dimensionalFJ()
+        r = circ.r*circ.gamma*a # Dimensional radius
+        trunc[i] = np.where(FJ > 0.1*np.max(FJ))[0][-1]
+
+
+    
+    for i, ind in enumerate(trunc):
+        rad[i] = circ.r[ind]
+    
+    if logLog:
+        axice.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+           else:
+        axice.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+
+    
     return fig
