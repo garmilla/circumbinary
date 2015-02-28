@@ -396,22 +396,28 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.times[0], circ.times[-1])
     
-    axtrunc= plt.subplot(1, 1, 1)
+    axtrunc= plt.subplot(2, 1, 1)
+    axplat = plt.subplot(2, 1, 2)
 
     
     axtrunc.set_ylabel("Truncation Radius (AU)")
     axtrunc.set_xlabel("Time (MY)")
+    axplat.set_ylabel("Plateau FJ (AU)")
+    axplat.set_xlabel("Time (MY)")
 
 
     axtrunc.set_xlim(xlim)
+    axplat.set_xlim(xlim)
 
     trunc = np.zeros(times.shape)
+    plat = np.zeros(times.shape)
     
     for i, t in enumerate(times):
         circ.loadTime(t)
         FJ = circ.dimensionalFJ()
         r = circ.r*circ.gamma*a # Dimensional radius
         trunc[i] = np.where(FJ > 0.1*np.max(FJ))[0][-1]
+        plat[i] np.max(FJ)
 
     rad = np.zeros(times.shape)
     
@@ -420,8 +426,10 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
     
     if logLog:
         axtrunc.loglog(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+        axplat.loglog(circ.dimensionalTime(circ.times)/1.0e6, plat)
     else:
         axtrunc.semilogx(circ.dimensionalTime(circ.times)/1.0e6, rad*20)
+        axtrunc.semilogx(circ.dimensionalTime(circ.times)/1.0e6, plat)
 
     
     return fig
