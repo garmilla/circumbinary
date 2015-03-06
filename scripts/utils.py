@@ -287,7 +287,7 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axdz.set_ylabel("Sigma")
     axdz.set_xlabel("r/r0")
     
-    axice.set_xlim(xlim)
+    axdz.set_xlim(xlim)
     axT.set_xlim(xlim)
     
     for i, t in enumerate(times):
