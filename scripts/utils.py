@@ -278,9 +278,10 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
-    
-    axT = plt.subplot(3, 1, 2)
-    axdz = plt.subplot(3, 1, 3)
+  
+    axdz = plt.subplot(2, 1, 1)
+    axT = plt.subplot(2, 1, 2)
+
 
     axT.set_ylabel("T (K)")
     axT.set_xlabel("r/r0")
@@ -313,16 +314,16 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         
         if logLog:
             axdz.loglog(circ.r, Sigma, color=_colors[i%7])
-            axdz.axvline(circ.r[deadzone],color=_colors[i%7])
+            axdz.axvline(circ.r[deadzone][0], circ.r[deadzone][-1])
             axT.loglog(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[deadzone], color=_colors[i%7])
+            axT.axvline(circ.r[deadzone][0], circ.r[deadzone][-1])
         
         else:
             axdz.semilogx(circ.r, Sigma, color=_colors[i%7])
-            axdz.axvline(circ.r[deadzone],color=_colors[i%7])
+            axdz.axvline(circ.r[deadzone][0], circ.r[deadzone][-1])
             axT.semilogx(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[deadzone], color=_colors[i%7])
-
+            axT.axvline(circ.r[deadzone][0], circ.r[deadzone][-1])
+                
     return fig
 
 
