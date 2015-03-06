@@ -264,9 +264,9 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
     return fig
 
-def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
-        Plot iceline
+        Plot iceline and deadzone
         """
     fig = plt.figure()
     
@@ -279,13 +279,13 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
     
-    axice = plt.subplot(2, 1, 1)
-    axT = plt.subplot(2, 1, 2)
+    axT = plt.subplot(3, 1, 2)
+    axdz = plt.subplot(3, 1, 3)
 
-    axice.set_ylabel("Sigma (g/cm^2)")
-    axice.set_xlabel("r/r0")
     axT.set_ylabel("T (K)")
     axT.set_xlabel("r/r0")
+    axdz.set_ylabel("Sigma")
+    axdz.set_xlabel("r/r0")
     
     axice.set_xlim(xlim)
     axT.set_xlim(xlim)
@@ -308,20 +308,20 @@ def plotice(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
             idxtab[update] = idx
             solved[update] = True
-        
-        iceline = np.where((idxtab < 3) & (idxtab > 1))[0][-1]
+
+        deadzone = np.where((Sigma > 20) & (T < 800))
         
         if logLog:
-            axice.loglog(circ.r, Sigma, color=_colors[i%7])
-            axice.axvline(circ.r[iceline], color=_colors[i%7])
+            axdz.loglog(circ.r, Sigma, color=_colors[i%7])
+            axdz.axvline(circ.r[deadzone],color=_colors[i%7])
             axT.loglog(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[iceline], color=_colors[i%7])
+            axT.axvline(circ.r[deadzone], color=_colors[i%7])
         
         else:
-            axice.semilogx(circ.r, Sigma, color=_colors[i%7])
-            axice.axvline(circ.r[iceline], color=_colors[i%7])
+            axdz.semilogx(circ.r, Sigma, color=_colors[i%7])
+            axdz.axvline(circ.r[deadzone],color=_colors[i%7])
             axT.semilogx(circ.r, T, color=_colors[i%7])
-            axT.axvline(circ.r[iceline], color=_colors[i%7])
+            axT.axvline(circ.r[deadzone], color=_colors[i%7])
 
     return fig
 
