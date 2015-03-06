@@ -310,19 +310,19 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
 
-        deadzone = np.where((Sigma > 20) & (T < 800))
+        deadzone = np.where((Sigma > 20) & (T < 800))[0]
         
         if logLog:
             axdz.loglog(circ.r, Sigma, color=_colors[i%7])
-            axdz.axvline([circ.r[deadzone][0][0],circ.r[deadzone][0][-1]], color=_colors[i%7])
+            axdz.axvline([circ.r[deadzone[0]],circ.r[deadzone[-1]]], color=_colors[i%7])
             axT.loglog(circ.r, T, color=_colors[i%7])
-            axT.axvline([circ.r[deadzone][0][0],circ.r[deadzone][0][-1]], color=_colors[i%7])
+            axT.axvline([circ.r[deadzone[0]],circ.r[deadzone[-1]]], color=_colors[i%7])
         
         else:
             axdz.semilogx(circ.r, Sigma, color=_colors[i%7])
-            axdz.axvline([circ.r[deadzone][0][0],circ.r[deadzone][0][-1]], color=_colors[i%7])
+            axdz.axvline([circ.r[deadzone[0]],circ.r[deadzone[-1]]], color=_colors[i%7])
             axT.semilogx(circ.r, T, color=_colors[i%7])
-            axT.axvline([circ.r[deadzone][0][0],circ.r[deadzone][0][-1]],color=_colors[i%7])
+            axT.axvline([circ.r[deadzone[0]],circ.r[deadzone[-1]]], color=_colors[i%7]))
                 
     return fig
 
