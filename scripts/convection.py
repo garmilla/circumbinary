@@ -116,7 +116,7 @@ class Circumbinary(object):
                 # Get the range of values for Sigma in the table
                 rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
                 # Interpolate in the log of dimensionless units
-                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp, s=smoothing)
+                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
             rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
