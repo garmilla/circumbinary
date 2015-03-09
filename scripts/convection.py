@@ -103,7 +103,7 @@ class Circumbinary(object):
         #return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
         return np.power(self.TvThin**4 + self.TvThick**4 + self.Ti**4, 1.0/4)/self.T0
 
-    def _genT(self, bellLin=True, **kargs):
+    def _genT(self, bellLin=True, smoothing=0.0, **kargs):
         """Create a cell variable for temperature"""
         if bellLin:
             @pickle_results(os.path.join(self.odir, "interpolator.pkl"))
@@ -116,7 +116,7 @@ class Circumbinary(object):
                 # Get the range of values for Sigma in the table
                 rangeSigma = (np.power(10.0, SigmaGrid.min()), np.power(10.0, SigmaGrid.max()))
                 # Interpolate in the log of dimensionless units
-                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp)
+                return rangeSigma, RectBivariateSpline(rGrid, SigmaGrid, temp, s=smoothing)
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
             rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
@@ -349,6 +349,8 @@ if __name__ == '__main__':
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
     parser.add_argument('--Sigmax', default=1.0e4, type=float,
                         help='Maximum suface density allowed.')
+    parser.add_argument('--smoothing', default=0.0, type=float,
+                        help='Smoothing parameter to pass to RectBivariateSpline.')
     parser.add_argument('--ncell', default=300, type=int,
                         help='The number of cells to use in the grid')
     parser.add_argument('--dt', default=1.0e-6, type=float,
