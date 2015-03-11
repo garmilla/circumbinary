@@ -264,7 +264,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
     return fig
 
-def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
         Plot iceline and deadzone
         """
@@ -278,7 +278,12 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     
     if xlim==None:
         xlim=(circ.r[0], 1.0e5*circ.r[0])
-  
+    
+    if Sigdz == None:
+        Sigdz = 20
+    else:
+        Sigdz = Sigdz
+        
     axdz = plt.subplot(2, 1, 1)
     axT = plt.subplot(2, 1, 2)
 
@@ -310,7 +315,7 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
 
-        deadzone = np.where((Sigma > 100) & (T < 800))[0]
+        deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
         
         if logLog:
             axdz.loglog(circ.r, Sigma, color=_colors[i%7])
