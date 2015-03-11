@@ -310,7 +310,7 @@ def plotdz(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             idxtab[update] = idx
             solved[update] = True
 
-        deadzone = np.where((Sigma > 20) & (T < 800))[0]
+        deadzone = np.where((Sigma > 100) & (T < 800))[0]
         
         if logLog:
             axdz.loglog(circ.r, Sigma, color=_colors[i%7])
