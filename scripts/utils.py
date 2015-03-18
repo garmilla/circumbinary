@@ -104,10 +104,54 @@ def pickle_results(filename=None, verbose=True):
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
+def plotTmap(circ, Sigres=2000):
+    SigmaGrid = np.logspace(np.log10(circ.Sigmin), np.log10(circ.Sigmax), Sigres)
+    SigmaGrid = np.flipud(SigmaGrid)
+    Tmap = np.zeros((Sigres, len(circ.r)))
+    for i, Sigma in enumerate(SigmaGrid):
+        SigmaArr = np.ones(circ.r.shape)*Sigma
+        Tmap[i,:] = circ._bellLinT(SigmaArr)
+
+    fig = plt.figure()
+
+    plt.imshow(np.log10(Tmap),
+               extent=(np.log10(circ.r[0]*a*circ.gamma/AU), np.log10(circ.r[-1]*a*circ.gamma/AU),
+               np.log10(circ.dimensionalSigma(circ.Sigmin)), np.log10(circ.dimensionalSigma(circ.Sigmax))),
+               interpolation='nearest', aspect='auto')
+
+    clb = plt.colorbar()
+    clb.set_label("log10(T) K")
+    plt.xlabel("log10(r) AU")
+    plt.ylabel("log10(Sigma) g/cm^2")
+
+    return fig
+
+def overPlotRuns(circ, fig=None, times=None, nTimes=4, **kargs):
+    if fig is None:
+        fig = plotTmap(circ, **kargs)
+
+    ax = fig.get_axes()[0]
+
+    if times == None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
+
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+        Sigma = np.maximum(circ.dimensionalSigma(), circ.dimensionalSigma(circ.Sigmin))
+        Sigma = np.log10(Sigma)
+        r = np.log10(circ.r*circ.gamma*a/AU)
+        ax.plot(r, Sigma, color='k')
+
+    return fig
+
 def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, FMin=1.0e35):
     """
-        Plot panel with Sigma, temperature, and FJ
-        """
+    Plot panel with Sigma, temperature, and FJ
+    """
     fig = plt.figure()
     
     if times == None:
