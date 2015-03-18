@@ -103,7 +103,7 @@ class Circumbinary(object):
         #return np.power(self.TvThin**4 + self.TvThick**4 + self.TtiThin**4 + self.TtiThick**4 + self.Ti**4, 1.0/4)/self.T0
         return np.power(self.TvThin**4 + self.TvThick**4 + self.Ti**4, 1.0/4)/self.T0
 
-    def _genT(self, bellLin=True, smoothing=0.0, **kargs):
+    def _genT(self, bellLin=True, tol=1.0e-8, smoothing=0.0, **kargs):
         """Create a cell variable for temperature"""
         if bellLin:
             @pickle_results(os.path.join(self.odir, "interpolator.pkl"))
@@ -120,6 +120,7 @@ class Circumbinary(object):
             # Pass the radial grid in phsyical units
             # Get back interpolator in logarithmic space
             rangeSigma, log10Interp = buildInterpolator(self.r, self.gamma, self.q, self.fudge, self.mDisk, **kargs)
+            self.Sigmin = rangeSigma[0]; self.Sigmax = rangeSigma[1]
             rGrid = np.log10(self.r)
             SigmaMin = np.ones(rGrid.shape)*rangeSigma[0]
             SigmaMax = np.ones(rGrid.shape)*rangeSigma[1]
@@ -131,9 +132,9 @@ class Circumbinary(object):
             # in an array given as a second argument. It can handle zero or negative
             # Sigma values.
             def func(Sigma):
-                good = np.logical_and(Sigma > rangeSigma[0], Sigma < rangeSigma[1])
-                badMin = np.logical_and(True, Sigma < rangeSigma[0])
-                badMax = np.logical_and(True, Sigma > rangeSigma[1])
+                good = np.logical_and(Sigma > rangeSigma[0] - tol, Sigma < rangeSigma[1] + tol)
+                badMin = np.logical_and(True, Sigma < rangeSigma[0] - tol)
+                badMax = np.logical_and(True, Sigma > rangeSigma[1] + tol)
                 if np.sum(good) > 0:
                     T[good] = np.power(10.0, log10Interp.ev(rGrid[good], np.log10(Sigma[good])))
                 if np.sum(badMin) > 0:
@@ -179,11 +180,14 @@ class Circumbinary(object):
             self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
                                                        - mask_coeff*3.0/2*self.nu/self.mesh.x*self.Sigma.old
 
-    def dimensionalSigma(self):
+    def dimensionalSigma(self, SigmaArr=None):
         """
         Return Sigma in dimensional form (cgs)
         """
-        return self.Sigma.value*self.mDisk*M/(self.gamma*a)**2
+        if SigmaArr is None:
+            return self.Sigma.value*self.mDisk*M/(self.gamma*a)**2
+        else:
+            return SigmaArr*self.mDisk*M/(self.gamma*a)**2
 
     def dimensionalFJ(self):
         """
