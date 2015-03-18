@@ -131,6 +131,7 @@ def overPlotRuns(circ, fig=None, times=None, nTimes=4, **kargs):
         fig = plotTmap(circ, **kargs)
 
     ax = fig.get_axes()[0]
+    xlim = ax.get_xlim(); ylim = ax.get_ylim()
 
     if times == None:
         times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
@@ -146,6 +147,7 @@ def overPlotRuns(circ, fig=None, times=None, nTimes=4, **kargs):
         r = np.log10(circ.r*circ.gamma*a/AU)
         ax.plot(r, Sigma, color='k')
 
+    ax.set_xlim(xlim); ax.set_ylim(ylim)
     return fig
 
 def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, FMin=1.0e35):
