@@ -152,7 +152,7 @@ def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e6, Sigres=20
                         idxs[-j-1,i], temp[i,j] = Tfin(r, Sigma, q, f, 1, delta=0.2)
                     except ValueError, e:
                         raise
-    if postprocess = True:
+    if postprocess:
         for i, j in zip(np.where(idxs==5)[0],np.where(idxs==5)[1]):
             idxs[i,j], temp[j,-i-1] = Tfin(rGrid[j],SigmaGrid[-i -1], q, f, 1, delta=0.07)    
     # Return values in logspace for interpolation
