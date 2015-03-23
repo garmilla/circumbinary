@@ -311,7 +311,7 @@ def loadResults(path):
         fMax = os.path.join(path, circ.files[iMax])
         circ.readFromFile(fMax)
     except ValueError:
-        import ipdb; ipdb.set_trace()
+        pass
     return circ
 
 def run(**kargs):
