@@ -140,6 +140,7 @@ class Circumbinary(object):
                 if np.sum(badMin) > 0:
                     T[badMin] = np.power(10.0, log10Interp.ev(rGrid[badMin], np.log10(SigmaMin[badMin])))
                 if np.sum(badMax) > 0:
+                    print Sigma
                     raise ValueError("Extrapolation to large values of Sigma is not allowed, build a table with a larger Sigmax")
                     T[badMax] = np.power(10.0, log10Interp.ev(rGrid[badMax], np.log10(SigmaMax[badMax])))
                 return T
@@ -310,7 +311,7 @@ def loadResults(path):
         fMax = os.path.join(path, circ.files[iMax])
         circ.readFromFile(fMax)
     except ValueError:
-        pass
+        import ipdb; ipdb.set_trace()
     return circ
 
 def run(**kargs):
