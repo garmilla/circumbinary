@@ -123,7 +123,8 @@ def Tfin(r, Sigma, q, f, idx, delta=0.0):
         else:
             return Tfin(r, Sigma, q, f, idx+1, delta=delta)
 
-def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e6, Sigres=2000, delta=0.1, postprocess = True, **kargs):
+def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e6, Sigres=2000, delta=0.1,
+                   postprocess = True, sigmaSigma=10, sigmaR=0, **kargs):
     """
         Return a table of precomputed temperatures as a function of radius and surface density.
         Arguments:
@@ -155,5 +156,8 @@ def buildTempTable(rGrid, q=1.0, f=0.002, Sigmin=1.0e-5, Sigmax=1.0e6, Sigres=20
     if postprocess:
         for i, j in zip(np.where(idxs==5)[0],np.where(idxs==5)[1]):
             idxs[i,j], temp[j,-i-1] = Tfin(rGrid[j],SigmaGrid[-i -1], q, f, 1, delta=0.07)    
+        from scipy.ndimage.filters import gaussian_filter
+        temp = gaussian_filter(temp, (sigmaR, sigmaSigma))
+
     # Return values in logspace for interpolation
     return np.log10(rGrid), np.log10(SigmaGrid), np.log10(temp), idxs
