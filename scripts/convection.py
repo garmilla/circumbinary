@@ -44,7 +44,7 @@ class Circumbinary(object):
             self.gap = np.where(self.rF < 1.0/gamma)
         self._genSigma()
         self._genTorque()
-        self._genT(bellLin=self.bellLin, **kargs)
+        self._genT(bellLin=self.bellLin, tol = 0.0, **kargs)
         self._genVr()
         self._buildEq()
 
