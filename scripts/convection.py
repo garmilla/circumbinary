@@ -376,5 +376,13 @@ if __name__ == '__main__':
                         help='Maximum time to evolve the model to in years')
     parser.add_argument('--dstep', default=5.0e3, type=float,
                         help='Intervals at which to save snapshots in years')
+    parser.add_argument('--rmStripe', action='store_true',
+                        help='If present, remove region 5 opacity stripe.')
+    parser.add_argument('--smoothT', action='store_true',
+                        help='If present, smooth the temperature map with a filter.')
+    parser.add_argument('--sigmaSigma', default=10.0, type=float,
+                        help='Radius of the gaussian filter in the Sigma direction (in pixel units).')
+    parser.add_argument('--sigmaR', default=2.0, type=float,
+                        help='Radius of the gaussian filter in the radius direction (in pixel units).')
     kargs = vars(parser.parse_args())
     run(**kargs)
