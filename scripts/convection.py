@@ -280,6 +280,8 @@ class Circumbinary(object):
             files.remove('interpolator.pkl')
         if 'init.pkl' in files:
             files.remove('init.pkl')
+        if 'nohup.out' in files:
+            files.remove('nohup.out')
         self.times = np.zeros((len(files),))
         for i, f in enumerate(files):
             match = re.match(r"^t((\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)\.pkl", f)
