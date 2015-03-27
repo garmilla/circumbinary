@@ -211,7 +211,8 @@ def plotaspect(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001
     axaspect = plt.subplot(1, 1, 1)
 
     axaspect.set_ylabel("h/r")
-
+    axaspect.set_xlabel("r/r0")
+    
     axaspect.set_xlim(xlim)
     
     for i, t in enumerate(times):
