@@ -193,6 +193,36 @@ def plotSTF(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001, F
             axFJ.semilogx(circ.r, FJ, color=_colors[i%7])
     return fig
 
+def plotaspect(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
+    """
+    Plot panel with Sigma, temperature, and FJ
+    """
+    fig = plt.figure()
+    
+    if times == None:
+        times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), nTimes)
+        print "You didn't specify times, I'll plot the times: {0}".format(circ.dimensionalTime(times))
+    else:
+        times = circ.dimensionlessTime(np.array(times))
+    
+    if xlim==None:
+        xlim=(circ.r[0], 1.0e5*circ.r[0])
+    
+    axaspect = plt.subplot(1, 1, 1)
+
+    axaspect.set_ylabel("h/r")
+
+    axaspect.set_xlim(xlim)
+    
+    for i, t in enumerate(times):
+        circ.loadTime(t)
+        print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
+        if logLog:
+            axaspect.loglog(circ.r, np.maximum(sigMin, Sigma), color=_colors[i%7])
+        else:
+            axaspect.semilogx(circ.r, (k*circ.T.value*circ.r/G/M/mu)**0.5, color=_colors[i%7])
+    return fig
+    
 def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
         Plot panel with opacity
