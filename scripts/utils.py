@@ -219,9 +219,9 @@ def plotaspect(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001
         circ.loadTime(t)
         print "I'm plotting snapshot {0} yr".format(circ.dimensionalTime())
         if logLog:
-            axaspect.loglog(circ.r, (k*circ.T.value*circ.r/G/M/mu)**0.5, color=_colors[i%7])
+            axaspect.loglog(circ.r, (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5, color=_colors[i%7])
         else:
-            axaspect.semilogx(circ.r, (k*circ.T.value*circ.r/G/M/mu)**0.5, color=_colors[i%7])
+            axaspect.semilogx(circ.r, (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5, color=_colors[i%7])
     return fig
     
 def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
