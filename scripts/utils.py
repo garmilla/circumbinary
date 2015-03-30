@@ -514,7 +514,7 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     """
     if tau is None:
         kappa = getKappa(circ)
-        tau = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+        tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
     Sigma = circ.dimensionalSigma()
     T = circ.T.value
     r = circ.r*a*circ.gamma
@@ -553,7 +553,7 @@ def getSED(circ, nLambda=1000, tauMin=0.0001):
     fnuT = np.zeros(nu.shape)
     r = circ.r*a*circ.gamma
     kappa = getKappa(circ)
-    tau = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+    tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
     Teff = getTeff(circ, tau=tau)
     Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
     Firr = sigma*thm.Tirr(r)**4
