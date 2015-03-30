@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 from constants import *
 import thermopy as thm
-import convection as conv
 
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
