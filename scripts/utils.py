@@ -2,10 +2,12 @@
 #https://github.com/astroML/astroML/blob/master/astroML/decorators.py
 import pickle
 import numpy as np
+from scipy.integrate import trapz
 import matplotlib.pyplot as plt
 
 from constants import *
 import thermopy as thm
+import convection as conv
 
 def pickle_results(filename=None, verbose=True):
     """Generator for decorator which allows pickling the results of a funcion
@@ -343,8 +345,8 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
 def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
-        Plot iceline and deadzone
-        """
+    Plot iceline and deadzone
+    """
     fig = plt.figure()
     
     if times == None:
@@ -415,8 +417,8 @@ def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sig
 
 def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
     """
-        Plot iceline
-        """
+    Plot iceline
+    """
     fig = plt.figure()
     
     times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), len(circ.times))
@@ -482,8 +484,8 @@ def ploticeline(circ, xlim=None, logLog=True, sigMin=0.0001):
 
 def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
     """
-        Plot truncation radius
-        """
+    Plot truncation radius
+    """
     fig = plt.figure()
     
     times = np.logspace(np.log10(circ.times[0]), np.log10(circ.times[-1]), len(circ.times))
@@ -528,3 +530,269 @@ def plottrunc(circ, xlim=None, logLog=True, sigMin=0.0001):
 
     
     return fig
+
+def geticeline(circ, sigMin=0.0001):
+    """
+    Returns two arrays, the first contains the times in years and the
+    second the value of the radius at the iceline for that snapshot.
+    """
+    times = circ.dimensionalTime(circ.times)
+    iceline = np.zeros(times.shape)
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        Sigma = circ.dimensionalSigma()
+        Sigma = np.maximum(sigMin, Sigma)
+        r = circ.r*circ.gamma*a # Dimensional radius
+        T = circ.T.value
+        kappa = np.zeros(T.shape)
+        idxtab = np.zeros(T.shape)
+        solved = np.zeros(T.shape, dtype=bool)
+        for idx in range(1, 13):
+            Tmin, Tmax = thm.getBracket(r, Sigma, idx)
+            good = np.logical_and(True, T > Tmin)
+            good = np.logical_and(good, T < Tmax)
+            update = np.logical_and(good, np.logical_not(solved))
+            kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
+            idxtab[update] = idx
+            solved[update] = True
+        iceline[i] = circ.r[np.where((idxtab < 3) & (idxtab > 1))[0][-1]]*a*circ.gamma/AU
+    return times, iceline
+
+def getrinfl(circ):
+    """
+    Returns two arrays, the first contains the times in years and the
+    second the value of rinfl for that snapshot.
+    """
+    times = circ.dimensionalTime(circ.times)
+    rinfl = np.zeros(times.shape)
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        l = circ.Sigma.value*circ.r**2
+        idx = l.argmax()
+        rinfl[i] = circ.r[idx]*a*circ.gamma/AU
+    return times, rinfl
+
+def getFJt(circ):
+    """
+    Returns two arrays, the first contains the times in years and the
+    second the maximum value of FJ for that snapshot.
+    """
+    times = circ.dimensionalTime(circ.times)
+    FJ = np.zeros(times.shape)
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        FJ[i] = circ.dimensionalFJ().max()
+    return times, FJ
+
+def getKappa(circ):
+    Sigma = circ.dimensionalSigma()
+    T = circ.T.value
+    r = circ.r*circ.gamma*a # Dimensional radius
+    kappa = np.zeros(T.shape)
+    solved = np.zeros(T.shape, dtype=bool)
+    index = np.zeros(T.shape)
+    for idx in range(1, 13):
+        Tmin, Tmax = thm.getBracket(r, Sigma, idx)
+        good = np.logical_and(True, T > Tmin)
+        good = np.logical_and(good, T < Tmax)
+        update = np.logical_and(good, np.logical_not(solved))
+        kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
+        index[update] = idx
+        solved[update] = True
+    return kappa
+
+def getTeff(circ, tau=None, tauMin=0.0001):
+    """
+    Return an array with the effective temperature as defined
+    in the paper
+    """
+    if tau is None:
+        kappa = getKappa(circ)
+        tau = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+    Sigma = circ.dimensionalSigma()
+    T = circ.T.value
+    r = circ.r*a*circ.gamma
+    Fnu = thm.ftid(r, Sigma, circ.q, circ.fudge) + thm.fv(r, T, Sigma)
+    Firr = sigma*thm.Tirr(r)**4
+    Teff = np.power(((1.0-1.0/tau)*Fnu + Firr)/sigma, 0.25)
+    return Teff
+
+def getBnu(nu, T):
+    """
+    Get the flux at frequency nu, for a blackbody at temperature T.
+    T can be an array, in which case an array of fluxes is returned.
+    """
+    Bnu = np.zeros(T.shape)
+    for i in range(len(T)):
+        if T[i] > 0.0:
+           if h*nu/k/T[i] < 1.0e2:
+               Bnu[i] = 2*h*nu**3/c**2\
+                        /(np.exp(h*nu/k/T[i]) - 1.0)
+    return Bnu
+
+def getSED(circ, nLambda=1000, tauMin=0.0001):
+    """
+    Returns four arrays:
+    lamb: Wavelength in microns
+    fnuD: The contribution of the disk to the SED 
+    fnuS: The contribution of the binary/star to the SED
+    fnuT: The total SED
+    """
+    Ts = np.array([5780.0]) # Temperature of the star
+    Rs = 6.955e10 # Radius of the star
+    nu = np.linspace(10.0, 15.0, num = nLambda)
+    nu = np.power(10.0, nu)
+    fnuD = np.zeros(nu.shape)
+    fnuS = np.zeros(nu.shape)
+    fnuT = np.zeros(nu.shape)
+    r = circ.r*a*circ.gamma
+    kappa = getKappa(circ)
+    tau = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+    Teff = getTeff(circ, tau=tau)
+    Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
+    Firr = sigma*thm.Tirr(r)**4
+    if circ.q == 1.0:
+        # We don't include the gap for circumbinary disks
+        Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
+    elif circ.q != 0.0:
+       raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
+
+    # Integrate the set of blackbodies at each frequency using the trapezoidal rule
+    for i in range(len(nu)):
+        x = r
+        y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
+            (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+        y *= 2*np.pi*np.pi*x
+        fnuD[i] = 2*nu[i]*trapz(y, x)
+        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*4*np.pi*Rs**2
+    fnuT = fnuD + fnuS
+    lamb = c/nu*1.0e4 # In microns
+    return lamb, fnuD, fnuS, fnuT
+
+_cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz01',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz05',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz']
+
+_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs013',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs051',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs1']
+
+_times = [5.0e3, 5.0e4, 5.0e5, 5.0e6]
+
+def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.0,
+                tauMin=0.01, FJMin=1.0e35, nLambda=1000):
+    """
+    Generate the files that supermongo takes as inputs to generate the paper's plots
+    Keywords:
+    cBinaries: A list of the directories with the data for the circumbinary disks from
+               lowest to highest mass. If None the above predefined lists are used.
+    cStellars: A list of directories with the data  for the circumstellar disks from
+               lowest to highest mass. If None the above predefined lists are used.
+    times: A list of times to use for the snapshots. If None the above predefined
+           lists are used.
+    """
+
+    if cBinaries is None:
+        cBinaries = _cBinaries
+    if cStellars is None:
+        cStellars = _cStellars
+    if times is None:
+        times = _times
+
+    # Generate the files to plot the Sigma, T, tau and FJ snapshots for
+    # the circumbinary disks.
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 6))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            outputArr[:,0] = circ.r
+            outputArr[:,1] = circ.r*a*circ.gamma/AU
+            outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
+            outputArr[:,3] = np.maximum(Tmin, circ.T.value)
+            kappa = getKappa(circ)
+            outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+            outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
+            np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+
+    # Generate the files to plot the Sigma, T, tau and FJ snapshots for
+    # the cicumstellar disks.
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 6))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            outputArr[:,0] = circ.r
+            outputArr[:,1] = circ.r*a*circ.gamma/AU
+            outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
+            outputArr[:,3] = np.maximum(Tmin, circ.T.value)
+            kappa = getKappa(circ)
+            outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
+            outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
+            np.savetxt('m{0}_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+
+    # Generate the files to plot the value of FJ at the plateau as a function of
+    # time. We only do this for the circumbinary disks.
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        outputArr = np.zeros((len(circ.times), 3))
+        Times, FJ = getFJt(circ)
+        outputArr[:,0] = Times
+        outputArr[:,1] = FJ
+        # We also need to store the analytic fit
+        outputArr[:,2] = 5.2e37*circ.mDisk/0.01*np.power(Times/3.0e6, -6.0/13)
+        np.savetxt('m{0}_ftime.dat'.format(circ.mDisk), outputArr)
+
+    # Generate the files to plot rinfl as a function of time, we also only do this
+    # for circumbinary disks.
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        outputArr = np.zeros((len(circ.times), 3))
+        Times, rinfl = getrinfl(circ)
+        outputArr[:,0] = Times
+        outputArr[:,1] = rinfl
+        # We also need to store the analytic fit
+        outputArr[:,2] = 380.0*np.power(Times/3.0e6, 14.0/13)
+        np.savetxt('m{0}_rinfl.dat'.format(circ.mDisk), outputArr)
+       
+    # Generate the files to plot the iceline as a function of time, we do this for both
+    # circumbinary and circumstellar disks.
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        outputArr = np.zeros((len(circ.times), 2))
+        Times, iceline = geticeline(circ)
+        outputArr[:,0] = Times
+        outputArr[:,1] = iceline
+        np.savetxt('m{0}_iceline.dat'.format(circ.mDisk), outputArr)
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        outputArr = np.zeros((len(circ.times), 2))
+        Times, iceline = geticeline(circ)
+        outputArr[:,0] = Times
+        outputArr[:,1] = iceline
+        np.savetxt('m{0}_iceline_circumstellar.dat'.format(circ.mDisk), outputArr)
+
+    # Generate the files to plot the SEDs, we only do this for the disks with mass
+    # 0.05 M_c
+    for disk in [cBinaries[1], cStellars[1]]:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((nLambda, 4))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            nu, fnuD, fnuS, fnuT = getSED(circ, nLambda=nLambda)
+            outputArr[:,0] = nu
+            outputArr[:,1] = fnuD
+            outputArr[:,2] = fnuS
+            outputArr[:,3] = fnuT
+            if circ.q == 1.0:
+                np.savetxt('m{0}_spectrum_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            elif circ.q == 0.0:
+                np.savetxt('m{0}_spectrum_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+
+if __name__ == '__main__':
+    genSMInputs()
