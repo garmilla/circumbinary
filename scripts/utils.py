@@ -571,8 +571,8 @@ def getSED(circ, nLambda=1000, tauMin=0.0001):
         y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
             (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
         y *= 2*np.pi*np.pi*x
-        fnuD[i] = 2*nu[i]*trapz(y, x)
-        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*4*np.pi*Rs**2
+        fnuD[i] = nu[i]*trapz(y, x)
+        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
     fnuT = fnuD + fnuS
     lamb = c/nu*1.0e4 # In microns
     return lamb, fnuD, fnuS, fnuT
