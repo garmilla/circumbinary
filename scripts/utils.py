@@ -241,11 +241,11 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
         if logLog:
             axheat.loglog(circ.r,thm.ftid(r,Sigma,circ.q,circ.fudge),color= 'r')
             axheat.loglog(circ.r,thm.fv(r,T,Sigma),color='b')
-            axheat.loglog(circ.r,sigma*thm.Tirr(r)**4,color='g')
+            axheat.loglog(circ.r,sigma*thm.Tirr(r, circ.q)**4,color='g')
         else:
-            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color ='r')
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r, circ.q)**4,color ='r')
             axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color='b')
-            axheat.semilogx(circ.r,sigma*thm.Tirr(r)**4,color='g')
+            axheat.semilogx(circ.r,sigma*thm.Tirr(r, circ.q)**4,color='g')
 
     return fig
 
@@ -519,7 +519,7 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     T = circ.T.value
     r = circ.r*a*circ.gamma
     Fnu = thm.ftid(r, Sigma, circ.q, circ.fudge) + thm.fv(r, T, Sigma)
-    Firr = sigma*thm.Tirr(r)**4
+    Firr = sigma*thm.Tirr(r, circ.q)**4
     Teff = np.power(((1.0-1.0/tau)*Fnu + Firr)/sigma, 0.25)
     return Teff
 
@@ -536,7 +536,7 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def getSED(circ, nLambda=1000, tauMin=0.0001):
+def getSED(circ, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -553,10 +553,13 @@ def getSED(circ, nLambda=1000, tauMin=0.0001):
     fnuT = np.zeros(nu.shape)
     r = circ.r*a*circ.gamma
     kappa = getKappa(circ)
-    tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
-    Teff = getTeff(circ, tau=tau)
-    Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
-    Firr = sigma*thm.Tirr(r)**4
+    if tau is None:
+        tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+    if Teff is None:
+        Teff = getTeff(circ, tau=tau)
+    if Tsh is None:
+        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
+    Firr = sigma*thm.Tirr(r, circ.q)**4
     if circ.q == 1.0:
         # We don't include the gap for circumbinary disks
         Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
