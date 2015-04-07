@@ -144,11 +144,19 @@ class Circumbinary(object):
 
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
-        logFaces = np.linspace(-np.log(self.gamma/inB), np.log(self.rmax), num=self.ncell+1)
-        logFacesLeft = logFaces[:-1]
-        logFacesRight = logFaces[1:]
-        dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-        self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
+        
+        if self.q > 0:
+           logFaces = np.linspace(-np.log(self.gamma/inB), np.log(self.rmax), num=self.ncell+1)
+           logFacesLeft = logFaces[:-1]
+           logFacesRight = logFaces[1:]
+           dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
+           self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
+        else:
+           logFaces = np.linspace(np.log(2.325*10**-4), np.log(self.rmax), num=self.ncell+1)
+           logFacesLeft = logFaces[:-1]
+           logFacesRight = logFaces[1:]
+           dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
+           self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
 
     def _genSigma(self, width=0.1):
         """Create dependent variable Sigma"""
