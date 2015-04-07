@@ -156,7 +156,7 @@ class Circumbinary(object):
            logFacesLeft = logFaces[:-1]
            logFacesRight = logFaces[1:]
            dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-           self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
+           self.mesh = CylindricalGrid1D(dr=dr, origin=(2.325*10**-4,))
 
     def _genSigma(self, width=0.1):
         """Create dependent variable Sigma"""
