@@ -520,7 +520,7 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     r = circ.r*a*circ.gamma
     Fnu = thm.ftid(r, Sigma, circ.q, circ.fudge) + thm.fv(r, T, Sigma)
     Firr = sigma*thm.Tirr(r, circ.q)**4
-    Teff = np.power(((1.0-1.0/tau)*Fnu + Firr)/sigma, 0.25)
+    Teff = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
     return Teff
 
 def getBnu(nu, T):
