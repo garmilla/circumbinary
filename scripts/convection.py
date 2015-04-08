@@ -113,6 +113,7 @@ class Circumbinary(object):
                  fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
                  bellLin=True, emptydt=0.001, **kargs):
         self.rmax = rmax
+        self.rmin = rmin
         self.ncell = ncell
         self.dt = dt
         self.delta = delta
@@ -141,30 +142,22 @@ class Circumbinary(object):
         self._genT(bellLin=self.bellLin, tol = 0.0, **kargs)
         self._genVr()
         self._buildEq()
-        
+
     def _genGrid(self, inB=1.0):
         """Generate a logarithmically spaced grid"""
-        logFaces = np.linspace(-np.log(self.gamma/inB), np.log(self.rmax), num=self.ncell+1)
-        logFacesLeft = logFaces[:-1]
-        logFacesRight = logFaces[1:]
-        dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-        self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
-
-    #def _genGrid(self, inB=1.0):
-     #   """Generate a logarithmically spaced grid"""
         
-      #  if self.q > 0:
-      #     logFaces = np.linspace(-np.log(self.gamma/inB), np.log(self.rmax), num=self.ncell+1)
-      #     logFacesLeft = logFaces[:-1]
-      #     logFacesRight = logFaces[1:]
-      #     dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-      #     self.mesh = CylindricalGrid1D(dr=dr, origin=(inB/self.gamma,))
-      #  else:
-      #     logFaces = np.linspace(np.log(2.325*10**-4), np.log(self.rmax), num=self.ncell+1)
-      #     logFacesLeft = logFaces[:-1]
-      #     logFacesRight = logFaces[1:]
-      #     dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
-      #    self.mesh = CylindricalGrid1D(dr=dr, origin=(2.325*10**-4,))
+        if self.q > 0:
+           logFaces = np.linspace(np.log(self.rmin), np.log(self.rmax), num=self.ncell+1)
+           logFacesLeft = logFaces[:-1]
+           logFacesRight = logFaces[1:]
+           dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
+           self.mesh = CylindricalGrid1D(dr=dr, origin=(self.rmin,))
+        else:
+           logFaces = np.linspace(np.log(self.rmin), np.log(self.rmax), num=self.ncell+1)
+           logFacesLeft = logFaces[:-1]
+           logFacesRight = logFaces[1:]
+           dr = tuple(np.exp(logFacesRight) - np.exp(logFacesLeft))
+          self.mesh = CylindricalGrid1D(dr=dr, origin=(self.rmin,))
 
     def _genSigma(self, width=0.1):
         """Create dependent variable Sigma"""
@@ -464,6 +457,8 @@ if __name__ == '__main__':
              description="Script that solves the convection problem in a cylindrical grid")
     parser.add_argument('--rmax', default=1.0e4, type=float,
                         help='The outer boundary of the grid in dimensionless units (r/rMin)')
+    parser.add_argument('--rmin', default=1.0e-2, type=float,
+                        help='The inner boundary of the grid in dimensionless units (r/rMin)')
     parser.add_argument('--Sigmax', default=1.0e4, type=float,
                         help='Maximum suface density allowed.')
     parser.add_argument('--smoothing', default=0.0, type=float,
