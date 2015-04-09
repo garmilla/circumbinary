@@ -109,7 +109,7 @@ def pickle_results(filename=None, verbose=True):
     return pickle_func
 
 class Circumbinary(object):
-    def __init__(self, rmax=1.0e4, ncell=300, dt=1.0e-6, delta=1.0e-100,
+    def __init__(self, rmin=1.0e-2, rmax=1.0e4, ncell=300, dt=1.0e-6, delta=1.0e-100,
                  fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
                  bellLin=True, emptydt=0.001, **kargs):
         self.rmax = rmax
