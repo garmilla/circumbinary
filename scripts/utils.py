@@ -562,6 +562,14 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
         if Teff is None:
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
+        Firr = sigma*thm.Tirr(r, circ.q)**4
+        for i in range(len(nu)):
+        x = r
+        y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
+            (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+        y *= 2*np.pi*np.pi*x
+        fnuD[i] = nu[i]*trapz(y, x)
+        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
             
     else:
         r = circ.r*a*circ.gamma
@@ -570,25 +578,28 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
         if Teff is None:
             Teff = getTeff(circ, tau=tau)
-    if Tsh is None:
-        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
-    Firr = sigma*thm.Tirr(r, circ.q)**4
-    if circ.q == 1.0:
-    # We don't include the gap for circumbinary disks
-        Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
-    elif circ.q != 0.0:
-        raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
-        
-    # Integrate the set of blackbodies at each frequency using the trapezoidal rule
-    for i in range(len(nu)):
+        Firr = sigma*thm.Tirr(r, circ.q)**4
+        for i in range(len(nu)):
         x = r
         y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
             (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
         y *= 2*np.pi*np.pi*x
         fnuD[i] = nu[i]*trapz(y, x)
         fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+        
+    if Tsh is None:
+        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
+    
+    #if circ.q == 1.0:
+    # We don't include the gap for circumbinary disks
+        #Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        #Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        #Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
+    #elif circ.q != 0.0:
+        #raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
+        
+    # Integrate the set of blackbodies at each frequency using the trapezoidal rule
+    
     fnuT = fnuD + fnuS
     lamb = c/nu*1.0e4 # In microns
     return lamb, fnuD, fnuS, fnuT
