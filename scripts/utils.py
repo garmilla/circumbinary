@@ -552,9 +552,6 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
     fnuS = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
-    if Tsh is None:
-        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
-    
     if extrap:
         r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma     
@@ -565,6 +562,8 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
         if Teff is None:
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
+        if Tsh is None:
+            Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
@@ -581,6 +580,8 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
         if Teff is None:
             Teff = getTeff(circ, tau=tau)
+        if Tsh is None:
+            Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
