@@ -552,6 +552,9 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
     fnuS = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
+    if Tsh is None:
+        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
+    
     if extrap:
         r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma     
@@ -587,8 +590,6 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             fnuD[i] = nu[i]*trapz(y, x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
-    if Tsh is None:
-        Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
     
     #if circ.q == 1.0:
     # We don't include the gap for circumbinary disks
