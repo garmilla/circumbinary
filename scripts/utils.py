@@ -490,10 +490,18 @@ def getFJt(circ):
         FJ[i] = circ.dimensionalFJ().max()
     return times, FJ
 
-def getKappa(circ):
-    Sigma = circ.dimensionalSigma()
+def getKappa(circ,extrap = False,power=1.0/0.95):
+    Rs = 6.955e10 # Radius of the star
+    if extrap:
+        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
+            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma()))
+        r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
+            circ.r)*a*circ.gamma
+    else:
+        Sigma = circ.dimensionalSigma()
+        r = circ.r*circ.gamma*a 
+        
     T = circ.T.value
-    r = circ.r*circ.gamma*a # Dimensional radius
     kappa = np.zeros(T.shape)
     solved = np.zeros(T.shape, dtype=bool)
     index = np.zeros(T.shape)
@@ -536,7 +544,7 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def getSED(circ, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
+def getSED(circ, extrap=False, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -551,23 +559,33 @@ def getSED(circ, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     fnuD = np.zeros(nu.shape)
     fnuS = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
-    r = circ.r*a*circ.gamma
-    kappa = getKappa(circ)
-    if tau is None:
-        tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+    
+    if extrap:
+        r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
+            circ.r)*a*circ.gamma     
+        kappa = getKappa(circ, extrap)
+        if tau is None:
+            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+            
+    else:
+        r = circ.r*a*circ.gamma
+        kappa = getKappa(circ)
+        if tau is None:
+            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+    
     if Teff is None:
         Teff = getTeff(circ, tau=tau)
     if Tsh is None:
         Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
     Firr = sigma*thm.Tirr(r, circ.q)**4
     if circ.q == 1.0:
-        # We don't include the gap for circumbinary disks
+    # We don't include the gap for circumbinary disks
         Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
         Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
         Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
     elif circ.q != 0.0:
-       raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
-
+        raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
+        
     # Integrate the set of blackbodies at each frequency using the trapezoidal rule
     for i in range(len(nu)):
         x = r
