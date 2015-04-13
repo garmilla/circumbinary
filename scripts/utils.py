@@ -560,15 +560,16 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma())
         if tau is None:
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
+        if Teff is None:
+            Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
             
     else:
         r = circ.r*a*circ.gamma
         kappa = getKappa(circ)
         if tau is None:
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
-    
-    if Teff is None:
-        Teff = getTeff(circ, tau=tau)
+        if Teff is None:
+            Teff = getTeff(circ, tau=tau)
     if Tsh is None:
         Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
     Firr = sigma*thm.Tirr(r, circ.q)**4
