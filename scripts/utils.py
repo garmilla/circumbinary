@@ -490,18 +490,10 @@ def getFJt(circ):
         FJ[i] = circ.dimensionalFJ().max()
     return times, FJ
 
-def getKappa(circ, extrap = False, power=1.0/0.95):
-    Rs = 6.955e10 # Radius of the star
-    if extrap:
-        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
-            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma())
-        r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
-            circ.r)*a*circ.gamma
-    else:
-        Sigma = circ.dimensionalSigma()
-        r = circ.r*circ.gamma*a 
-        
+def getKappa(circ):
+    Sigma = circ.dimensionalSigma()
     T = circ.T.value
+    r = circ.r*circ.gamma*a # Dimensional radius
     kappa = np.zeros(T.shape)
     solved = np.zeros(T.shape, dtype=bool)
     index = np.zeros(T.shape)
@@ -563,9 +555,11 @@ def getSED(circ, extrap=False, Teff=None, Tsh=None, tau=None, nLambda=1000, tauM
     if extrap:
         r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma     
-        kappa = getKappa(circ, extrap)
+        kappa = np.append([getKappa(circ)[0]]*40,getKappa(circ))
+        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
+            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma())
         if tau is None:
-            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+            tau = np.maximum(tauMin, 0.5*Sigma*kappa)
             
     else:
         r = circ.r*a*circ.gamma
