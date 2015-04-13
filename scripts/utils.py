@@ -564,12 +564,12 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
-        x = r
-        y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
-            (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
-        y *= 2*np.pi*np.pi*x
-        fnuD[i] = nu[i]*trapz(y, x)
-        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            x = r
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
+                (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+            y *= 2*np.pi*np.pi*x
+            fnuD[i] = nu[i]*trapz(y, x)
+            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
             
     else:
         r = circ.r*a*circ.gamma
@@ -580,12 +580,12 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
             Teff = getTeff(circ, tau=tau)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
-        x = r
-        y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
-            (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
-        y *= 2*np.pi*np.pi*x
-        fnuD[i] = nu[i]*trapz(y, x)
-        fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            x = r
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
+                (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+            y *= 2*np.pi*np.pi*x
+            fnuD[i] = nu[i]*trapz(y, x)
+            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     if Tsh is None:
         Tsh = np.power(L/16/np.pi/sigma/0.1/(circ.r*a*circ.gamma)**2, 0.25)
