@@ -490,11 +490,11 @@ def getFJt(circ):
         FJ[i] = circ.dimensionalFJ().max()
     return times, FJ
 
-def getKappa(circ,extrap = False,power=1.0/0.95):
+def getKappa(circ, extrap = False, power=1.0/0.95):
     Rs = 6.955e10 # Radius of the star
     if extrap:
         Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
-            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma()))
+            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma())
         r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma
     else:
