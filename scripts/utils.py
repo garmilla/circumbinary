@@ -536,7 +536,7 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def getSED(circ, extrap=False, power=1.0/0.95, RStar = 6.955e10, TSstar = 5780, SHf = 0, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
+def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -545,7 +545,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 6.955e10, TSstar = 5780, 
     fnuT: The total SED
     """
     Ts = np.array([TStar]) # Temperature of the star
-    Rs = RStar # Radius of the star
+    Rs = RStar * 6.955e10# Radius of the star
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
     fnuD = np.zeros(nu.shape)
