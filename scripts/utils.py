@@ -544,8 +544,8 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
     fnuS: The contribution of the binary/star to the SED
     fnuT: The total SED
     """
-    Ts = np.array([5780.0]) # Temperature of the star
-    Rs = 6.955e10 # Radius of the star
+    Ts = np.array([4000.0]) # Temperature of the star
+    Rs = 2.5*6.955e10 # Radius of the star
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
     fnuD = np.zeros(nu.shape)
@@ -553,7 +553,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
     fnuT = np.zeros(nu.shape)
     
     if extrap:
-        r = np.append(np.exp(np.linspace(np.log(1.1327*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
+        r = np.append(np.exp(np.linspace(np.log(2.6*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma     
         kappa = np.append([getKappa(circ)[0]]*40,getKappa(circ))
         Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
