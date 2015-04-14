@@ -536,7 +536,8 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
+def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, LStar = 1, \
+            Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -563,7 +564,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0,
         if Teff is None:
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
         if Tsh is None:
-            Tsh = SHf*np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+            Tsh = SHf*np.power(L*LStar/16/np.pi/sigma/0.1/(r)**2, 0.25)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
