@@ -536,7 +536,7 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
+def getSED(circ, extrap=False, power=1.0/0.95, RStar = 6.955e10, TSstar = 5780, SHf = 0, Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -544,8 +544,8 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
     fnuS: The contribution of the binary/star to the SED
     fnuT: The total SED
     """
-    Ts = np.array([4000.0]) # Temperature of the star
-    Rs = 2.5*6.955e10 # Radius of the star
+    Ts = np.array([TStar]) # Temperature of the star
+    Rs = RStar # Radius of the star
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
     fnuD = np.zeros(nu.shape)
@@ -563,7 +563,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
         if Teff is None:
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
         if Tsh is None:
-            Tsh = 0*np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+            Tsh = SHf*np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
