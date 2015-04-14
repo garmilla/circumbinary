@@ -563,7 +563,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, Teff=None, Tsh=None, tau=None, nL
         if Teff is None:
             Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
         if Tsh is None:
-            Tsh = 0
+            Tsh = 0*np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
