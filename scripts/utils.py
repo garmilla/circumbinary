@@ -536,6 +536,37 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
+def extrap(nextrap=40, tol=0.1):
+    r = np.exp(np.linspace(np.log(1.1*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]), nextrap))*a*circ.gamma
+    r2 = np.append(r, circ.r[0]*a*circ.gamma)
+    r2rev = r2[::-1]
+    FJ = np.array([circ.dimensionalFJ()[0]])
+    for i in range(len(r)):
+        x = FJ[i]*(r2rev[i+1]/r2rev[i])**0.5
+        FJ = np.append(FJ, x)
+     
+    #add code T[i] = f(Sig[i], r[j]
+    
+    Sig0 = np.array([circ.dimensionalSigma()[0]])
+    for j in in range(len(r2)):
+        def Sig(i, Sig0=Sig0):
+            if i = 0:
+                return Sig0
+            else:
+                return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/T[i-1,j]
+        i = 0
+        while np.abs((Sig[i+1] - Sig[i])/Sig[i]) > tol:
+            i+=1
+    
+        Sigextrap = np.array([])
+        Sigextrap = np.append(Sig[i])
+        
+    Sigextrap = Sigextrap[1:]
+    
+    return Sigextrap[::-1]
+
+        
+        
 def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, LStar = 1, \
             Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
