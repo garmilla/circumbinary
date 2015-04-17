@@ -551,7 +551,7 @@ def extrap(nextrap=40, tol=0.1):
     temp = np.power(10, table[2])
 
     Sig0 = np.array([circ.dimensionalSigma()[0]])
-    for j in in range(len(r2)):
+    for j in range(len(r2)):
         def Sig(i, Sig0=Sig0):
             if i == 0:
                 return Sig0[-1]
