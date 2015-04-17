@@ -547,13 +547,17 @@ def extrap(nextrap=40, tol=0.1):
      
     #add code T[i] = f(Sig[i], r[j]
     
+    table = thm.buildTempTable(r2rev, q=0)
+    temp = np.power(10, table[2])
+
     Sig0 = np.array([circ.dimensionalSigma()[0]])
     for j in in range(len(r2)):
         def Sig(i, Sig0=Sig0):
-            if i = 0:
+            if i == 0:
                 return Sig0[-1]
             else:
-                return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/T[i-1,j]
+                idx = np.where(np.power(10, table[1]) < Sig[i-1])[-1][-1]
+                return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
         i = 0
         while np.abs((Sig[i+1] - Sig[i])/Sig[i]) > tol:
             i+=1
@@ -566,8 +570,6 @@ def extrap(nextrap=40, tol=0.1):
     Sigextrap = Sigextrap[1:]
     
     return Sigextrap[::-1]
-
-        
         
 def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, LStar = 1, \
             Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
