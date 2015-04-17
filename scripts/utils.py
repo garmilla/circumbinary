@@ -563,10 +563,10 @@ def extrap(circ, nextrap=40, tol=0.1):
         while np.abs((Sig(i+1) - Sig(i))/Sig(i)) > tol:
             i+=1
         
-        Sig0 = np.append(Sig0,Sig[i])
+        Sig0 = np.append(Sig0,Sig(i))
     
         Sigextrap = np.array([])
-        Sigextrap = np.append(Sig[i])
+        Sigextrap = np.append(Sig(i))
         
     Sigextrap = Sigextrap[1:]
     
