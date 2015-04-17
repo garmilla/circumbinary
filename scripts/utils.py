@@ -560,7 +560,7 @@ def extrap(circ, nextrap=40, tol=0.1):
                 idx = np.where(np.power(10, table[1]) < Sig[i-1])[-1][-1]
                 return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
         i = 0
-        while np.abs((Sig[i+1] - Sig[i])/Sig[i]) > tol:
+        while np.abs((Sig(i+1) - Sig(i))/Sig(i)) > tol:
             i+=1
         
         Sig0 = np.append(Sig0,Sig[i])
