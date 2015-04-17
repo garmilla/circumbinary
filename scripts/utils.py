@@ -551,12 +551,14 @@ def extrap(nextrap=40, tol=0.1):
     for j in in range(len(r2)):
         def Sig(i, Sig0=Sig0):
             if i = 0:
-                return Sig0
+                return Sig0[-1]
             else:
                 return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/T[i-1,j]
         i = 0
         while np.abs((Sig[i+1] - Sig[i])/Sig[i]) > tol:
             i+=1
+        
+        Sig0 = np.append(Sig0,Sig[i])
     
         Sigextrap = np.array([])
         Sigextrap = np.append(Sig[i])
