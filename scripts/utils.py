@@ -536,7 +536,7 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def extrap(nextrap=40, tol=0.1):
+def extrap(circ, nextrap=40, tol=0.1):
     Rs = 6.955e10
     r = np.exp(np.linspace(np.log(1.1*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]), nextrap))*a*circ.gamma
     r2 = np.append(r, circ.r[0]*a*circ.gamma)
