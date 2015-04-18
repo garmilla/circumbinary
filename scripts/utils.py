@@ -590,7 +590,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0,
     fnuT = np.zeros(nu.shape)
     
     if extrap:
-        r = np.append(np.exp(np.linspace(np.log(2.6*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
+        r = np.append(np.exp(np.linspace(np.log(Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
             circ.r)*a*circ.gamma     
         kappa = np.append([getKappa(circ)[0]]*40,getKappa(circ))
         Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
