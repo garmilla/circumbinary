@@ -572,42 +572,54 @@ def extrap(circ, nextrap=40, tol=0.1):
     
     return Sigextrap
         
-def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0, LStar = 1, \
-            Teff=None, Tsh=None, tau=None, nLambda=1000, tauMin=0.0001):
+def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
+            Rmin = 1, Rmax = 270, SHf = 0, nextrap = 40, alpha=None, Q = 1, Firr=None, \
+            Teff=None, Tsh=None, Tirr=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
+    Q: the emission efficiency
     fnuD: The contribution of the disk to the SED 
+    fnuSh: The contribution of superheated grains to the SED
     fnuS: The contribution of the binary/star to the SED
     fnuT: The total SED
     """
     Ts = np.array([TStar]) # Temperature of the star
-    Rs = RStar * 6.955e10# Radius of the star
+    Rs = RStar * 6.955e10 #Radius of the star
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
     fnuD = np.zeros(nu.shape)
     fnuS = np.zeros(nu.shape)
+    fnuSh = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
     if extrap:
-        r = np.append(np.exp(np.linspace(np.log(Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),40)),\
-            circ.r)*a*circ.gamma     
-        kappa = np.append([getKappa(circ)[0]]*40,getKappa(circ))
-        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**40),\
-            np.log(circ.dimensionalSigma()[0]*(power)),40)),circ.dimensionalSigma())
+        rout = np.where(circ.r*a*circ.gamma/AU < rmax)[0][-1]
+        r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
+            circ.r[-(circ.ncell - rout)])*a*circ.gamma     
+        kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ))
+        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
+            np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma())
         if tau is None:
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
+        if alpha is None:
+            alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7))
         if Teff is None:
-            Teff = (2.0/3/np.pi)**0.25*(Rs/r)**0.75 * Ts
+            Teff = (alpha/2)**0.25*(Rs/r)**0.75 * Ts
         if Tsh is None:
-            Tsh = SHf*np.power(L*LStar/16/np.pi/sigma/0.1/(r)**2, 0.25)
-        Firr = sigma*thm.Tirr(r, circ.q)**4
+            Tsh = SHf*np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
+        if Tirr is None:
+            Tirr = (((eta/7.0)*0.5*L*LStar/(4*np.pi*sigma))**2* k/(G*MStar*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
+        if Firr is None:
+            Firr = sigma*Tirr**4
         for i in range(len(nu)):
             x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
-                (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
+            z = (2.0+tau)/(1.0+tau)*alpha*getBnu(nu[i], Tsh)
             y *= 2*np.pi*np.pi*x
+            z *= 2*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
+            fnuSh[i] = nu[i]*trapzy(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
             
     else:
@@ -622,10 +634,12 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0,
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)+\
-                (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
+            z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
             y *= 2*np.pi*np.pi*x
+            z *= 2*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
+            fnuSh[i] = nu[i]*trapzy(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     
@@ -639,9 +653,9 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, TStar = 5780, SHf = 0,
         
     # Integrate the set of blackbodies at each frequency using the trapezoidal rule
     
-    fnuT = fnuD + fnuS
+    fnuT = fnuD + fnuS + fnuSh
     lamb = c/nu*1.0e4 # In microns
-    return lamb, fnuD, fnuS, fnuT
+    return lamb, fnuD, fnuSh, fnuS, fnuT
 
 _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz01',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz05',
