@@ -603,7 +603,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
         if tau is None:
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
         if alpha is None:
-            alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7))
+            alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         if Teff is None:
             Teff = (alpha/2)**0.25*(Rs/r)**0.75 * Ts
         if Tsh is None:
