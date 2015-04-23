@@ -591,15 +591,15 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
             alpha = 0.005*AU/r 
-        if Teff is None:
-            Teff = (alpha/2)**0.25*(Rs/r)**0.5 * Ts
         if SH:
             Tsh = np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
+            if Teff is None:
+                Teff = (alpha/4)**0.25*(Rs/r)**0.5 * Ts
         else: 
             Tsh = 0* np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
-        if Tirr is None:
-            Tirr = (((eta/7.0)*0.5*L*LStar/(4*np.pi*sigma))**2* k/(G*MStar*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
-        Firr = sigma*Tirr**4
+            if Teff is None:
+                Teff = (alpha/2)**0.25*(Rs/r)**0.5 * Ts
+    
         for i in range(len(nu)):
             x = r
             y = getBnu(nu[i], Teff)
