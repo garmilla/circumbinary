@@ -130,7 +130,7 @@ def plotaspect(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001
             axaspect.loglog(circ.r, (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5, color=_colors[i%7])
         else:
             axaspect.semilogx(circ.r, (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5, color=_colors[i%7])
-    return fig
+    return figc
     
 def plotSTOp(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
@@ -536,9 +536,9 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def extrap(circ, nextrap=40, tol=0.1):
+def extrap(circ, nextrap=40, rmin = 6):
     Rs = 6.955e10
-    r = np.exp(np.linspace(np.log(1.1*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]), nextrap))*a*circ.gamma
+    r = np.exp(np.linspace(np.log(rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]), nextrap))*a*circ.gamma
     r2 = np.append(r, circ.r[0]*a*circ.gamma)
     r2rev = r2[::-1]
     FJ = np.array([circ.dimensionalFJ()[0]])
@@ -546,34 +546,24 @@ def extrap(circ, nextrap=40, tol=0.1):
         x = FJ[i]*(r2rev[i+1]/r2rev[i])**0.5
         FJ = np.append(FJ, x)
     Sigextrap = np.array([])
-    #add code T[i] = f(Sig[i], r[j]
-    
+
     table = thm.buildTempTable(r2rev, q=0)
     temp = np.power(10, table[2])
+    Sig = np.power(10, table[1])
 
     Sig0 = np.array([circ.dimensionalSigma()[0]])
-    for j in range(len(r)):
-        def Sig(i, Sig0=Sig0):
-            if i == 0:
-                return Sig0[-1]
-            else:
-                idx = np.where(np.power(10, table[1]) < Sig(i-1))[-1][-1]
-                return FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
-        i = 0
-        while np.abs((Sig(i+1) - Sig(i))/Sig(i)) > tol:
-            i+=1
-        
-        Sig0 = np.append(Sig0,Sig(i+1))
+        for j in range(len(r)):
+            idx = np.where(Sig < Sig0[-1])[-1][-1]
+            def FJSig(Sig):
+                return Sig - FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
+            Signew = broyden1(FJSig, Sig0[-1])
+            Sig0 = np.append(Sig0,Signew)
+            Sigextrap = np.append(Sigextrap, Signew)
     
-        
-        Sigextrap = np.append(Sigextrap, Sig(i+1))
-        
-    
-    
-    return Sigextrap
-        
-def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
-            Rmin = 1, Rmax = 270, SHf = 0, nextrap = 40, alpha=None, Q = 1, Firr=None, \
+    return Sigextrap[::-1]
+
+def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
+            Rmin = 1, Rmax = 270, SHf = False, Flared = False, nextrap = 40, Q = 1,\
             Teff=None, Tsh=None, Tirr=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
@@ -593,7 +583,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
     fnuSh = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
-    if extrap:
+    if CG = True:
         rout = np.where(circ.r*a*circ.gamma/AU < rmax)[0][-1]
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[-(circ.ncell - rout)])*a*circ.gamma     
@@ -602,27 +592,30 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
             np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma())
         if tau is None:
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
-        if alpha is None:
+        if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
+        else:
+            alpha = 0.005*AU/r 
         if Teff is None:
             Teff = (alpha/2)**0.25*(Rs/r)**0.75 * Ts
-        if Tsh is None:
-            Tsh = SHf*np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
+        if SH:
+            Tsh = np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
+        else: 
+            Tsh = 0 
         if Tirr is None:
             Tirr = (((eta/7.0)*0.5*L*LStar/(4*np.pi*sigma))**2* k/(G*MStar*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
-        if Firr is None:
-            Firr = sigma*Tirr**4
+        Firr = sigma*Tirr**4
         for i in range(len(nu)):
             x = r
             y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
             z = (2.0+tau)/(1.0+tau)*alpha*getBnu(nu[i], Tsh)
-            y *= 2*np.pi*np.pi*x
-            z *= 2*np.pi*np.pi*x
+            y *= 8*np.pi*np.pi*x
+            z *= 8*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapzy(z,x)
-            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*4*np.pi*Rs**2
             
-    else:
+    if circ.q == 0:
         r = circ.r*a*circ.gamma
         kappa = getKappa(circ)
         if tau is None:
@@ -643,13 +636,33 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     
-    #if circ.q == 1.0:
+    elif circ.q == 1.0:
     # We don't include the gap for circumbinary disks
-        #Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        #Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        #Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
-    #elif circ.q != 0.0:
-        #raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
+        r = circ.r*a*circ.gamma
+        kappa = getKappa(circ)
+        if tau is None:
+            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+        if Teff is None:
+            Teff = getTeff(circ, tau=tau)
+        if Tsh is None:
+            Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+        Firr = sigma*thm.Tirr(r, circ.q)**4
+        for i in range(len(nu)):
+            x = r
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
+            z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+            y *= 2*np.pi*np.pi*x
+            z *= 2*np.pi*np.pi*x
+            fnuD[i] = nu[i]*trapz(y, x)
+            fnuSh[i] = nu[i]*trapzy(z,x)
+            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+        
+        Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
+        
+    elif circ.q != 0.0:
+        raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
         
     # Integrate the set of blackbodies at each frequency using the trapezoidal rule
     
@@ -657,13 +670,13 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
     lamb = c/nu*1.0e4 # In microns
     return lamb, fnuD, fnuSh, fnuS, fnuT
 
-_cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz01',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzz05',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzz']
+_cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz12']
 
-_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs013',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs051',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs1']
+_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs012',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs052',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs12']
 
 _times = [5.0e3, 5.0e4, 5.0e5, 5.0e6]
 
