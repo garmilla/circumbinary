@@ -552,13 +552,13 @@ def extrap(circ, nextrap=40, rmin = 6):
     Sig = np.power(10, table[1])
 
     Sig0 = np.array([circ.dimensionalSigma()[0]])
-        for j in range(len(r)):
-            idx = np.where(Sig < Sig0[-1])[-1][-1]
-            def FJSig(Sig):
-                return Sig - FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
-            Signew = broyden1(FJSig, Sig0[-1])
-            Sig0 = np.append(Sig0,Signew)
-            Sigextrap = np.append(Sigextrap, Signew)
+    for j in range(len(r)):
+        idx = np.where(Sig < Sig0[-1])[-1][-1]
+        def FJSig(Sig):
+            return Sig - FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
+        Signew = broyden1(FJSig, Sig0[-1])
+        Sig0 = np.append(Sig0,Signew)
+        Sigextrap = np.append(Sigextrap, Signew)
     
     return Sigextrap[::-1]
 
