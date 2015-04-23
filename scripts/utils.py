@@ -587,11 +587,6 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[-(circ.ncell - rout)])*a*circ.gamma     
-        kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ))
-        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
-            np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma())
-        if tau is None:
-            tau = np.maximum(tauMin, 0.5*Sigma*kappa)
         if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
@@ -607,8 +602,8 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         Firr = sigma*Tirr**4
         for i in range(len(nu)):
             x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
-            z = (2.0+tau)/(1.0+tau)*alpha*getBnu(nu[i], Tsh)
+            y = getBnu(nu[i], Teff)
+            z = alpha*getBnu(nu[i], Tsh)
             y *= 8*np.pi*np.pi*x
             z *= 8*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
