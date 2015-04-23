@@ -563,7 +563,7 @@ def extrap(circ, nextrap=40, rmin = 6):
     return Sigextrap[::-1]
 
 def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
-            Rmin = 1, Rmax = 270, SHf = False, Flared = False, nextrap = 40, Q = 1,\
+            Rmin = 1, Rmax = 270, SH = False, Flared = False, nextrap = 40, Q = 1,\
             Teff=None, Tsh=None, Tirr=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
@@ -583,7 +583,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     fnuSh = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
-    if CG = True:
+    if CG:
         rout = np.where(circ.r*a*circ.gamma/AU < rmax)[0][-1]
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[-(circ.ncell - rout)])*a*circ.gamma     
