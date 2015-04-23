@@ -586,7 +586,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     if CG:
         rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
-            circ.r[-(circ.ncell - rout)])*a*circ.gamma     
+            circ.r[:-(circ.ncell - rout+1)])*a*circ.gamma     
         if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
