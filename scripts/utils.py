@@ -607,7 +607,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             y *= 8*np.pi*np.pi*x
             z *= 8*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
-            fnuSh[i] = nu[i]*trapzy(z,x)
+            fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*4*np.pi*Rs**2
             
     if circ.q == 0:
@@ -627,7 +627,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
-            fnuSh[i] = nu[i]*trapzy(z,x)
+            fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     
@@ -649,7 +649,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
             fnuD[i] = nu[i]*trapz(y, x)
-            fnuSh[i] = nu[i]*trapzy(z,x)
+            fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
         Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
