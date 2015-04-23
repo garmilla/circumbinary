@@ -586,7 +586,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     if CG:
         rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
-            circ.r[:-(circ.ncell - rout+1)])*a*circ.gamma     
+            circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma     
         if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
@@ -596,7 +596,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         if SH:
             Tsh = np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
         else: 
-            Tsh = 0 
+            Tsh = 0* np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
         if Tirr is None:
             Tirr = (((eta/7.0)*0.5*L*LStar/(4*np.pi*sigma))**2* k/(G*MStar*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
         Firr = sigma*Tirr**4
