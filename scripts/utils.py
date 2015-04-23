@@ -609,56 +609,57 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*4*np.pi*Rs**2
-            
-    if circ.q == 0:
-        r = circ.r*a*circ.gamma
-        kappa = getKappa(circ)
-        if tau is None:
-            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
-        if Teff is None:
-            Teff = getTeff(circ, tau=tau)
-        if Tsh is None:
-            Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
-        Firr = sigma*thm.Tirr(r, circ.q)**4
-        for i in range(len(nu)):
-            x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
-            z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
-            y *= 2*np.pi*np.pi*x
-            z *= 2*np.pi*np.pi*x
-            fnuD[i] = nu[i]*trapz(y, x)
-            fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
-        
     
-    elif circ.q == 1.0:
-    # We don't include the gap for circumbinary disks
-        r = circ.r*a*circ.gamma
-        kappa = getKappa(circ)
-        if tau is None:
-            tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
-        if Teff is None:
-            Teff = getTeff(circ, tau=tau)
-        if Tsh is None:
-            Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
-        Firr = sigma*thm.Tirr(r, circ.q)**4
-        for i in range(len(nu)):
-            x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
-            z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
-            y *= 2*np.pi*np.pi*x
-            z *= 2*np.pi*np.pi*x
-            fnuD[i] = nu[i]*trapz(y, x)
-            fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+    else:        
+        if circ.q == 0:
+            r = circ.r*a*circ.gamma
+            kappa = getKappa(circ)
+            if tau is None:
+                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+            if Teff is None:
+                Teff = getTeff(circ, tau=tau)
+            if Tsh is None:
+                Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+            Firr = sigma*thm.Tirr(r, circ.q)**4
+            for i in range(len(nu)):
+                x = r
+                y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
+                z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+                y *= 2*np.pi*np.pi*x
+                z *= 2*np.pi*np.pi*x
+                fnuD[i] = nu[i]*trapz(y, x)
+                fnuSh[i] = nu[i]*trapz(z,x)
+                fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            
         
-        Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
-        
-    elif circ.q != 0.0:
-        raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
-        
+        elif circ.q == 1.0:
+        # We don't include the gap for circumbinary disks
+            r = circ.r*a*circ.gamma
+            kappa = getKappa(circ)
+            if tau is None:
+                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+            if Teff is None:
+                Teff = getTeff(circ, tau=tau)
+            if Tsh is None:
+                Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+            Firr = sigma*thm.Tirr(r, circ.q)**4
+            for i in range(len(nu)):
+                x = r
+                y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
+                z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+                y *= 2*np.pi*np.pi*x
+                z *= 2*np.pi*np.pi*x
+                fnuD[i] = nu[i]*trapz(y, x)
+                fnuSh[i] = nu[i]*trapz(z,x)
+                fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            
+            Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
+            Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
+            Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
+            
+        elif circ.q != 0.0:
+            raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
+            
     # Integrate the set of blackbodies at each frequency using the trapezoidal rule
     
     fnuT = fnuD + fnuS + fnuSh
