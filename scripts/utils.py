@@ -592,7 +592,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         else:
             alpha = 0.005*AU/r 
         if Teff is None:
-            Teff = (alpha/2)**0.25*(Rs/r)**0.75 * Ts
+            Teff = (alpha/2)**0.25*(Rs/r)**0.5 * Ts
         if SH:
             Tsh = np.power(L*LStar/16/np.pi/sigma/Q/(r)**2, 0.25)
         else: 
