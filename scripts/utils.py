@@ -523,6 +523,43 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     Teff = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
     return Teff
 
+def getTeffextrap(circ, nextrap=40, Rmin = 6, Rs = 6.955e10, tau=None, tauMin=0.0001, power=1.0/0.95):
+    """
+    Return an array with the effective temperature as defined
+    in the paper for a circumstellar disk extrapolated inward 
+    """
+    
+    r = np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap))*a*circ.gamma
+    Sigextrap = np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
+                np.log(circ.dimensionalSigma()[0]*(power)),nextrap))
+    T = np.array([])
+    op = np.array([])
+    kappa = np.array([])
+    Tableextrap = thm.buildTempTable(r, q= 0.0, smoothT=True,rmStripe=True)
+    Temp = np.power(10, Tableextrap[2])
+    idxs = Tableextrap[3]
+    Sigma = np.power(10, Tableextrap[1])
+    
+    for i in range(len(Sigextrap)):
+        idx = np.where(Sigma < Sigextrap[i])[-1][-1]
+        Tfin = Temp[i, idx]
+        opfin = idxs[-idx -1, i]
+        T = np.append(T, Tfin)
+        op = np.append(op, opfin)
+    Fnu = thm.ftid(r, Sigextrap, q=0, f=0) + thm.fv(r, T, Sigextrap)
+    Firr = sigma*thm.Tirr(r,q=0)**4
+    
+    for i in range(len(op)):
+        opac = thm.op(T[i], r[i], Sigextrap[i], op[i])
+        kappa = np.append(kappa , opac)
+    
+    if tau is None:
+        tau = np.maximum(tauMin, 0.5*Sigextrap*kappa()*op)
+        
+    Teffextrap = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
+    
+    return Teffextrap
+    
 def getBnu(nu, T):
     """
     Get the flux at frequency nu, for a blackbody at temperature T.
@@ -547,7 +584,7 @@ def extrap(circ, nextrap=40, rmin = 6):
         FJ = np.append(FJ, x)
     Sigextrap = np.array([])
 
-    table = thm.buildTempTable(r2rev, q=0)
+    table = thm.buildTempTable(r2rev, q=0, rmStripe=True,smoothT=True)
     temp = np.power(10, table[2])
     Sig = np.power(10, table[1])
 
@@ -583,10 +620,10 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     fnuSh = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
-    if CG:
-        rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
-        r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
+    rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+    r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma     
+    if CG:
         if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
@@ -614,19 +651,21 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     
     else:        
         if circ.q == 0:
-            r = circ.r*a*circ.gamma
-            kappa = getKappa(circ)
+            #kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ))
+            Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
+                np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma())
             if tau is None:
                 tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
             if Teff is None:
-                Teff = getTeff(circ, tau=tau)
+                Teff = np.append(getTeffextrap, getTeff(circ, tau=tau))
             if Tsh is None:
-                Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+                Tsh = np.power(L/16/np.pi/sigma/Q/(r)**2, 0.25)
             Firr = sigma*thm.Tirr(r, circ.q)**4
+            alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
             for i in range(len(nu)):
                 x = r
                 y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
-                z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
+                z = (2.0+tau)/(1.0+tau)*alpha*getBnu(nu[i], Tsh)
                 y *= 2*np.pi*np.pi*x
                 z *= 2*np.pi*np.pi*x
                 fnuD[i] = nu[i]*trapz(y, x)
