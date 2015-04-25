@@ -653,14 +653,14 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         if circ.q == 0:
             rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
             r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
-            circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
+                circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
             kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ)[:-(circ.ncell - rout - 1)])
             Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
                 np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma()[:-(circ.ncell - rout -1)])
             if tau is None:
                 tau = np.maximum(tauMin, 0.5*Sigma*kappa)
             if Teff is None:
-                Teff = np.append(getTeffextrap(circ), getTeff(circ, tau=tau)[:-(circ.cnell - rout -1)])
+                Teff = np.append(getTeffextrap(circ, tau=tau), getTeff(circ, tau=tau)[:-(circ.cnell - rout -1)])
             if Tsh is None:
                 Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
             Firr = sigma*thm.Tirr(r, circ.q)**4
