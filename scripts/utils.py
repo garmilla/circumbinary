@@ -679,7 +679,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         elif circ.q == 1.0:
         # We don't include the gap for circumbinary disks
             rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
-            r = circ.r[:-(circ.ncell - rout - 1)*a*circ.gamma
+            r = circ.r[:-(circ.ncell - rout - 1)*a*circ.gamma]
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             if tau is None:
                 tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)*kappa)
@@ -688,6 +688,9 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             if Tsh is None:
                 Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
             Firr = sigma*thm.Tirr(r, circ.q)**4
+            Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
+            Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
+            Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
             for i in range(len(nu)):
                 x = r
                 y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
@@ -697,10 +700,6 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
                 fnuD[i] = nu[i]*trapz(y, x)
                 fnuSh[i] = nu[i]*trapz(z,x)
                 fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
-            
-            Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
-            Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
-            Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
             
         elif circ.q != 0.0:
             raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
