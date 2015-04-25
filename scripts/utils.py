@@ -554,7 +554,7 @@ def getTeffextrap(circ, nextrap=40, Rmin = 6, Rs = 6.955e10, tau=None, tauMin=0.
         kappa = np.append(kappa , opac)
     
     if tau is None:
-        tau = np.maximum(tauMin, 0.5*Sigextrap*kappa()*op)
+        tau = np.maximum(tauMin, 0.5*Sigextrap*kappa*op)
         
     Teffextrap = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
     
@@ -660,7 +660,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             if tau is None:
                 tau = np.maximum(tauMin, 0.5*Sigma*kappa)
             if Teff is None:
-                Teff = np.append(getTeffextrap, getTeff(circ, tau=tau)[:-(circ.cnell - rout -1)])
+                Teff = np.append(getTeffextrap(circ), getTeff(circ, tau=tau)[:-(circ.cnell - rout -1)])
             if Tsh is None:
                 Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
             Firr = sigma*thm.Tirr(r, circ.q)**4
