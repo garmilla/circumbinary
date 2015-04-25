@@ -620,10 +620,10 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     fnuSh = np.zeros(nu.shape)
     fnuT = np.zeros(nu.shape)
     
-    rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
-    r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
-            circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma     
     if CG:
+        rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+        r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
+            circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma     
         if Flared:
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
         else:
@@ -651,21 +651,24 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
     
     else:        
         if circ.q == 0:
-            #kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ))
+            rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+            r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
+            circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
+            kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ)[:-(circ.ncell - rout - 1)])
             Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
-                np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma())
+                np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma()[:-(circ.ncell - rout -1)])
             if tau is None:
-                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+                tau = np.maximum(tauMin, 0.5*Sigma*kappa)
             if Teff is None:
-                Teff = np.append(getTeffextrap, getTeff(circ, tau=tau))
+                Teff = np.append(getTeffextrap, getTeff(circ, tau=tau)[:-(circ.cnell - rout -1)])
             if Tsh is None:
-                Tsh = np.power(L/16/np.pi/sigma/Q/(r)**2, 0.25)
+                Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
             Firr = sigma*thm.Tirr(r, circ.q)**4
             alpha = 0.005*AU/r + 0.05*(r/AU)**(2.0/7)
             for i in range(len(nu)):
                 x = r
                 y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
-                z = (2.0+tau)/(1.0+tau)*alpha*getBnu(nu[i], Tsh)
+                z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1,Tsh)**4*getBnu(nu[i], Tsh)
                 y *= 2*np.pi*np.pi*x
                 z *= 2*np.pi*np.pi*x
                 fnuD[i] = nu[i]*trapz(y, x)
@@ -675,14 +678,15 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         
         elif circ.q == 1.0:
         # We don't include the gap for circumbinary disks
-            r = circ.r*a*circ.gamma
-            kappa = getKappa(circ)
+            rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+            r = circ.r[:-(circ.ncell - rout - 1)*a*circ.gamma
+            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             if tau is None:
-                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
+                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)*kappa)
             if Teff is None:
-                Teff = getTeff(circ, tau=tau)
+                Teff = getTeff(circ, tau=tau)[:-(circ.ncell - rout -1)]
             if Tsh is None:
-                Tsh = np.power(L/16/np.pi/sigma/0.1/(r)**2, 0.25)
+                Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
             Firr = sigma*thm.Tirr(r, circ.q)**4
             for i in range(len(nu)):
                 x = r
