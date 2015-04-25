@@ -682,7 +682,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
             r = circ.r[:-(circ.ncell - rout - 1)*a*circ.gamma]
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             if tau is None:
-                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)*kappa)]
+                tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa
             if Teff is None:
                 Teff = getTeff(circ, tau=tau)[:-(circ.ncell - rout -1)]
             if Tsh is None:
