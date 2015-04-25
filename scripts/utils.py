@@ -679,7 +679,7 @@ def getSED(circ, extrap=False, CG = False, power=1.0/0.95, RStar = 1, MStar = 1,
         elif circ.q == 1.0:
         # We don't include the gap for circumbinary disks
             rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
-            r = circ.r[:-(circ.ncell - rout - 1)*a*circ.gamma]
+            r = circ.r[:-(circ.ncell - rout - 1)]a*circ.gamma
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             if tau is None:
                 tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
