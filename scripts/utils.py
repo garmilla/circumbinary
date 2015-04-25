@@ -636,7 +636,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.cnell - rout - 1)])
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.ncell - rout - 1)])
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1,Tsh)**4*getBnu(nu[i], Tsh)
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
