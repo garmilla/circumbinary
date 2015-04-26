@@ -507,7 +507,7 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
-def getTeff(circ, tau=None, tauMin=0.0001):
+def getTeff(circ, tau=100, tauMin=0.0001):
     """
     Return an array with the effective temperature as defined
     in the paper
@@ -523,7 +523,7 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     Teff = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
     return Teff
 
-def getTeffextrap(circ, nextrap=40, Rmin = 6, Rs = 6.955e10, tau=None, tauMin=0.0001, power=1.0/0.95):
+def getTeffextrap(circ, nextrap=40, Rmin = 6, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
     """
     Return an array with the effective temperature as defined
     in the paper for a circumstellar disk extrapolated inward 
@@ -601,7 +601,7 @@ def extrap(circ, nextrap=40, rmin = 6):
 
 def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Rmin = 1, Rmax = 270, SH = False, Flared = False, nextrap = 40, Q = 1,\
-            Teff=None, Tsh=None, Tirr=None, tau=None, nLambda=1000, tauMin=0.0001):
+            Teff=None, Tsh=None, Tirr=None, tau=100, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
