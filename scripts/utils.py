@@ -676,7 +676,7 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
     
     fnuT = fnuD + fnuS + fnuSh
     lamb = c/nu*1.0e4 # In microns
-    return lamb, fnuD, fnuSh, fnuS, fnuT
+    return lamb, fnuD+fnuSh, fnuS, fnuT
 
 _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
