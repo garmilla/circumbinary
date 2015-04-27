@@ -3,6 +3,7 @@
 import pickle
 import numpy as np
 from scipy.integrate import trapz
+import scipy.optimize
 import matplotlib.pyplot as plt
 
 from constants import *
@@ -523,35 +524,26 @@ def getTeff(circ, tau=100, tauMin=0.0001):
     Teff = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
     return Teff
 
-def getTeffextrap(circ, nextrap=40, Rmin = 6, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
+def getTeffextrap(circ, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
     """
     Return an array with the effective temperature as defined
     in the paper for a circumstellar disk extrapolated inward 
     """
     
+    x = circ.r[1]/circ.r[0]
+    nextrap = 12
+    Rmin = circ.r[0]/Rs*a*circ.gamma/np.exp(nextrap*np.log(x))
     r = np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap))*a*circ.gamma
-    Sigextrap = np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
-                np.log(circ.dimensionalSigma()[0]*(power)),nextrap))
-    T = np.array([])
-    op = np.array([])
-    kappa = np.array([])
-    Tableextrap = thm.buildTempTable(r, q= 0.0, smoothT=True,rmStripe=True)
-    Temp = np.power(10, Tableextrap[2])
-    idxs = Tableextrap[3]
-    Sigma = np.power(10, Tableextrap[1])
+    r2 = np.append(r, circ.r[0]*a*circ.gamma)
+    r2rev = r2[::-1]
+    FJ = np.array([circ.dimensionalFJ()[0]])
+    for i in range(len(r)):
+        x = FJ[i]*(r2rev[i+1]/r2rev[i])**0.5
+        FJ = np.append(FJ, x)
     
-    for i in range(len(Sigextrap)):
-        idx = np.where(Sigma < Sigextrap[i])[-1][-1]
-        Tfin = Temp[i, idx]
-        opfin = idxs[-idx -1, i]
-        T = np.append(T, Tfin)
-        op = np.append(op, opfin)
-    Fnu = thm.ftid(r, Sigextrap, q=0, f=0) + thm.fv(r, T, Sigextrap)
+    FJ = FJ[::-1][:-1]
+    Fnu = 3.0/8.0/np.pi*FJ*thm.Omega(r)/r**2
     Firr = sigma*thm.Tirr(r,q=0)**4
-    
-    for i in range(len(op)):
-        opac = thm.op(T[i], r[i], Sigextrap[i], op[i])
-        kappa = np.append(kappa , opac)
     
     if tau is None:
         tau = np.maximum(tauMin, 0.5*Sigextrap*kappa*op)
@@ -573,34 +565,8 @@ def getBnu(nu, T):
                         /(np.exp(h*nu/k/T[i]) - 1.0)
     return Bnu
 
-def extrap(circ, nextrap=40, rmin = 6):
-    Rs = 6.955e10
-    r = np.exp(np.linspace(np.log(rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]), nextrap))*a*circ.gamma
-    r2 = np.append(r, circ.r[0]*a*circ.gamma)
-    r2rev = r2[::-1]
-    FJ = np.array([circ.dimensionalFJ()[0]])
-    for i in range(len(r)):
-        x = FJ[i]*(r2rev[i+1]/r2rev[i])**0.5
-        FJ = np.append(FJ, x)
-    Sigextrap = np.array([])
-
-    table = thm.buildTempTable(r2rev, q=0, rmStripe=True,smoothT=True)
-    temp = np.power(10, table[2])
-    Sig = np.power(10, table[1])
-
-    Sig0 = np.array([circ.dimensionalSigma()[0]])
-    for j in range(len(r)):
-        idx = np.where(Sig < Sig0[-1])[-1][-1]
-        def FJSig(Sig):
-            return Sig - FJ[j]*mu/3/np.pi/alpha/k/r2rev[j]**2/temp[j,idx]
-        Signew = broyden1(FJSig, Sig0[-1])
-        Sig0 = np.append(Sig0,Signew)
-        Sigextrap = np.append(Sigextrap, Signew)
-    
-    return Sigextrap[::-1]
-
-def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
-            Rmin = 1, Rmax = 270, SH = False, Flared = False, nextrap = 40, Q = 1,\
+def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
+            Rmax = 270, SH = False, Flared = False, Q = 1,\
             Teff=None, Tsh=None, Tirr=None, tau=100, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
@@ -622,10 +588,11 @@ def getSED(circ, extrap=False, power=1.0/0.95, RStar = 1, MStar = 1, TStar = 578
     
     if circ.q == 0:
         rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+        x = circ.r[1]/circ.r[0]
+        nextrap = 12
+        Rmin = circ.r[0]/Rs*a*circ.gamma/np.exp(nextrap*np.log(x))
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
-        Sigma = np.append(np.exp(np.linspace(np.log(circ.dimensionalSigma()[0]*(power)**nextrap),\
-            np.log(circ.dimensionalSigma()[0]*(power)),nextrap)),circ.dimensionalSigma()[:-(circ.ncell - rout -1)])
         if tau is None:
             kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ)[:-(circ.ncell - rout - 1)])
             tau = np.maximum(tauMin, 0.5*Sigma*kappa)
