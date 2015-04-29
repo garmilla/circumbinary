@@ -643,7 +643,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     
     fnuT = fnuD + fnuS + fnuSh
     lamb = c/nu*1.0e4 # In microns
-    return lamb, fnuD+fnuSh, fnuS, fnuT
+    return lamb, fnuD, fnuSh, fnuS, fnuT
 
 _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
@@ -755,14 +755,15 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in [cBinaries[1], cStellars[1]]:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((nLambda, 4))
+            outputArr = np.zeros((nLambda, 5))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             nu, fnuD, fnuS, fnuT = getSED(circ, nLambda=nLambda)
             outputArr[:,0] = nu
             outputArr[:,1] = fnuD
             outputArr[:,2] = fnuS
-            outputArr[:,3] = fnuT
+            outputArr[:,3] = fnuSh
+            outputArr[:,4] = fnuT
             if circ.q == 1.0:
                 np.savetxt('m{0}_spectrum_{1}.dat'.format(circ.mDisk, i+1), outputArr)
             elif circ.q == 0.0:
