@@ -758,7 +758,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr = np.zeros((nLambda, 5))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
-            nu, fnuD, fnuS, fnuT = getSED(circ, nLambda=nLambda)
+            nu, fnuD, fnuS, fnuSh, fnuT = getSED(circ, nLambda=nLambda)
             outputArr[:,0] = nu
             outputArr[:,1] = fnuD
             outputArr[:,2] = fnuS
