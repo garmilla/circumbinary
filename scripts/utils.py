@@ -586,7 +586,6 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     """
     Ts = np.array([TStar]) # Temperature of the star
     Rs = RStar * 6.955e10 #Radius of the star
-    Sigma = circ.dimensionalSigma()
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
     fnuIrr=np.zeros(nu.shape)
@@ -604,6 +603,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         Rmin = circ.r[0]/Rs*a*circ.gamma/np.exp(nextrap*np.log(x))
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
+        Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tauextrap = np.empty(nextrap)
@@ -637,6 +637,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     # We don't include the gap for circumbinary disks
         rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
         r = circ.r[:-(circ.ncell - rout - 1)]*a*circ.gamma
+        Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
