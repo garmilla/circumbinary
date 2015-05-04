@@ -523,9 +523,9 @@ def getTeff(circ, tau=None, tauMin=0.0001):
     Fnu = thm.fv(r, T, Sigma)
     Firr = sigma*thm.Tirr(r, circ.q)**4
     Teff = np.power(((1.0+1.0/tau)*(Fnu + Ftid) + Firr)/sigma, 0.25)
-    TeffTid = np.power((1.0+1.0/tau)*Ftid, 0.25)
-    TeffNu = np.power((1.0+1.0/tau)*Fnu, 0.25)
-    TeffIrr = np.power(Firr, 0.25)
+    TeffTid = np.power((1.0+1.0/tau)*Ftid/sigma, 0.25)
+    TeffNu = np.power((1.0+1.0/tau)*Fnu/sigma, 0.25)
+    TeffIrr = np.power(Firr/sigma, 0.25)
     
     return Teff, TeffNu, TeffIrr, TeffTid
 
@@ -554,8 +554,8 @@ def getTeffextrap(circ, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
         tau = np.maximum(tauMin, 0.5*Sigextrap*kappa*op)
         
     Teffextrap = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
-    TeffextrapNu = np.power((1.0+1.0/tau)*Fnu/Sigma, 0.25)
-    TeffextrapIrr = np.power(Firr, 0.25)
+    TeffextrapNu = np.power((1.0+1.0/tau)*Fnu/sigma, 0.25)
+    TeffextrapIrr = np.power(Firr/sigma, 0.25)
     
     return Teffextrap, TeffextrapNu, TeffextrapIrr
     
