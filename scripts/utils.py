@@ -629,7 +629,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Irr *= 2*np.pi*np.pi*x
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
-            fnuVis[i] = nu[i]*trapz(Vis, x)
+            fnuNu[i] = nu[i]*trapz(Vis, x)
             fnuIrr[i] = nu[i]*trapz(Irr, x)
             fnuTid[i] = nu[i]*0
             fnuD[i] = nu[i]*trapz(y, x)
@@ -667,7 +667,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Vis *= 2*np.pi*np.pi*x
             Irr *= 2*np.pi*np.pi*x
             Tid *= 2*np.pi*np.pi*x
-            fnuVis[i] = nu[i]*trapz(Vis, x)
+            fnuNu[i] = nu[i]*trapz(Vis, x)
             fnuIrr[i] = nu[i]*trapz(Irr, x)
             fnuTid[i] = nu[i]*trapz(Tid, x)
             fnuD[i] = nu[i]*trapz(y, x)
@@ -681,7 +681,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     
     fnuT = fnuD + fnuS + fnuSh
     lamb = c/nu*1.0e4 # In microns
-    return lamb, fnuVis, fnuIrr, fnuTid, fnuD, fnuSh, fnuS, fnuT
+    return lamb, fnuNu, fnuIrr, fnuTid, fnuD, fnuSh, fnuS, fnuT
 
 _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
@@ -793,15 +793,18 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in [cBinaries[1], cStellars[1]]:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((nLambda, 5))
+            outputArr = np.zeros((nLambda, 8))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
-            nu, fnuD, fnuS, fnuSh, fnuT = getSED(circ, nLambda=nLambda)
+            nu, fnuNu, fnuIrr, fnuTid, fnuD, fnuS, fnuSh, fnuT = getSED(circ, nLambda=nLambda)
             outputArr[:,0] = nu
-            outputArr[:,1] = fnuD
-            outputArr[:,2] = fnuS
-            outputArr[:,3] = fnuSh
-            outputArr[:,4] = fnuT
+            outputArr[:,1] = fnuNu
+            outputArr[:,2] = fnuIrr
+            outputArr[:,3] = fnuTid
+            outputArr[:,4] = fnuD
+            outputArr[:,5] = fnuS
+            outputArr[:,6] = fnuSh
+            outputArr[:,7] = fnuT
             if circ.q == 1.0:
                 np.savetxt('m{0}_spectrum_{1}.dat'.format(circ.mDisk, i+1), outputArr)
             elif circ.q == 0.0:
