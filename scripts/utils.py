@@ -621,9 +621,9 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
-            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu[:-(circ.ncell - rout - 1)])
-            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr[:-(circ.ncell - rout - 1)])
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.ncell - rout - 1)])
+            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu)
+            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr)
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1,Tsh)**4*getBnu(nu[i], Tsh)
             Vis *= 2*np.pi*np.pi*x
             Irr *= 2*np.pi*np.pi*x
@@ -645,7 +645,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
         if Teff is None:
-            Teff = getTeff(circ, tau=tau)[0]
+            Teff = getTeff(circ)[0]
         TeffNu = getTeff(circ)[1]
         TeffIrr = getTeff(circ)[2]
         TeffTid = getTeff(circ)[3]
@@ -657,10 +657,10 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
         for i in range(len(nu)):
             x = r
-            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu[:-(circ.ncell - rout - 1)])
-            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr[:-(circ.ncell - rout - 1)])
-            Tid = tau/(1.0 + tau)*getBnu(nu[i], TeffTid[:-(circ.ncell - rout - 1)])
-            y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.ncell - rout - 1)])
+            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu)
+            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr)
+            Tid = tau/(1.0 + tau)*getBnu(nu[i], TeffTid)
+            y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
