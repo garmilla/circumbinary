@@ -513,6 +513,8 @@ def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     Return an array with the effective temperature as defined
     in the paper
     """
+    
+    rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
     if tau is None:
         kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
         tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
