@@ -605,7 +605,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
         if tau is None:
-            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)])
+            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tauextrap = np.empty(nextrap)
             tauextrap.fill(100)
             tau = np.maximum(tauMin, np.append(tauextrap, 0.5*Sigma*kappa))
