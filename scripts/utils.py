@@ -508,7 +508,7 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
-def getTeff(circ, tau=100, tauMin=0.0001):
+def getTeff(circ, tau=None, tauMin=0.0001):
     """
     Return an array with the effective temperature as defined
     in the paper
@@ -519,10 +519,15 @@ def getTeff(circ, tau=100, tauMin=0.0001):
     Sigma = circ.dimensionalSigma()
     T = circ.T.value
     r = circ.r*a*circ.gamma
-    Fnu = thm.ftid(r, Sigma, circ.q, circ.fudge) + thm.fv(r, T, Sigma)
+    Ftid = thm.ftid(r, Sigma, circ.q, circ.fudge) 
+    Fnu = thm.fv(r, T, Sigma)
     Firr = sigma*thm.Tirr(r, circ.q)**4
-    Teff = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
-    return Teff
+    Teff = np.power(((1.0+1.0/tau)*(Fnu + Ftid) + Firr)/sigma, 0.25)
+    TeffTid = np.power((1.0+1.0/tau)*Ftid, 0.25)
+    TeffNu = np.power((1.0+1.0/tau)*Fnu, 0.25)
+    TeffIrr = np.power(Firr, 0.25)
+    
+    return Teff, TeffNu, TeffIrr, TeffTid
 
 def getTeffextrap(circ, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
     """
@@ -549,8 +554,10 @@ def getTeffextrap(circ, Rs = 6.955e10, tau=100, tauMin=0.0001, power=1.0/0.95):
         tau = np.maximum(tauMin, 0.5*Sigextrap*kappa*op)
         
     Teffextrap = np.power(((1.0+1.0/tau)*Fnu + Firr)/sigma, 0.25)
+    TeffextrapNu = np.power((1.0+1.0/tau)*Fnu/Sigma, 0.25)
+    TeffextrapIrr = np.power(Firr, 0.25)
     
-    return Teffextrap
+    return Teffextrap, TeffextrapNu, TeffextrapIrr
     
 def getBnu(nu, T):
     """
@@ -567,7 +574,7 @@ def getBnu(nu, T):
 
 def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Rmax = 270, SH = False, Flared = False, Q = 1,\
-            Teff=None, Tsh=None, Tirr=None, tau=100, nLambda=1000, tauMin=0.0001):
+            Teff=None, Tsh=None, Tirr=None, tau=None, nLambda=1000, tauMin=0.0001):
     """
     Returns four arrays:
     lamb: Wavelength in microns
@@ -579,8 +586,12 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     """
     Ts = np.array([TStar]) # Temperature of the star
     Rs = RStar * 6.955e10 #Radius of the star
+    Sigma = circ.dimensionalSigma()
     nu = np.linspace(10.0, 15.0, num = nLambda)
     nu = np.power(10.0, nu)
+    fnuIrr=np.zeros(nu.shape)
+    fnuNu=np.zeros(nu.shape)
+    fnuTid=np.zeros(nu.shape)
     fnuD = np.zeros(nu.shape)
     fnuS = np.zeros(nu.shape)
     fnuSh = np.zeros(nu.shape)
@@ -594,19 +605,30 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         r = np.append(np.exp(np.linspace(np.log(Rmin*Rs/(a*circ.gamma)),np.log(circ.r[0]**2/circ.r[1]),nextrap)),\
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
         if tau is None:
-            kappa = np.append([getKappa(circ)[0]]*nextrap,getKappa(circ)[:-(circ.ncell - rout - 1)])
-            tau = np.maximum(tauMin, 0.5*Sigma*kappa)
+            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)])
+            tauextrap = np.empty(nextrap)
+            tauextrap.fill(100)
+            tau = np.maximum(tauMin, np.append(tauextrap, 0.5*Sigma*kappa))
         if Teff is None:
-            Teff = np.append(getTeffextrap(circ, tau=tau), getTeff(circ, tau=tau))
+            Teff = np.append(getTeffextrap(circ)[0], getTeff(circ, tau=tau)[0])
+        TeffNu = np.append(getTeffextrap(circ)[1], getTeff(circ,tau=tau)[1])
+        TeffIrr = np.append(getTeffextrap(circ)[2], getTeff(circ,tau=tau)[2])
         if Tsh is None:
             Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
+            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu[:-(circ.ncell - rout - 1)])
+            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr[:-(circ.ncell - rout - 1)])
             y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.ncell - rout - 1)])
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1,Tsh)**4*getBnu(nu[i], Tsh)
+            Vis *= 2*np.pi*np.pi*x
+            Irr *= 2*np.pi*np.pi*x
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
+            fnuVis[i] = nu[i]*trapz(Vis, x)
+            fnuIrr[i] = nu[i]*trapz(Irr, x)
+            fnuTid[i] = nu[i]*0
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
@@ -619,7 +641,10 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
         if Teff is None:
-            Teff = getTeff(circ, tau=tau)
+            Teff = getTeff(circ, tau=tau)[0]
+        TeffNu = getTeff(circ,tau=tau)[1]
+        TeffIrr = getTeff(circ,tau=tau)[2]
+        TeffTid = getTeff(circ,tau=tau)[3]
         if Tsh is None:
             Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
@@ -628,10 +653,19 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         Firr[np.where(circ.r < circ.rF[0]*2)] = 0.0
         for i in range(len(nu)):
             x = r
+            Vis = tau/(1.0 + tau)*getBnu(nu[i], TeffNu[:-(circ.ncell - rout - 1)])
+            Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr[:-(circ.ncell - rout - 1)])
+            Tid = tau/(1.0 + tau)*getBnu(nu[i], TeffTid[:-(circ.ncell - rout - 1)])
             y = tau/(1.0 + tau)*getBnu(nu[i], Teff[:-(circ.ncell - rout - 1)])
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
             y *= 2*np.pi*np.pi*x
             z *= 2*np.pi*np.pi*x
+            Vis *= 2*np.pi*np.pi*x
+            Irr *= 2*np.pi*np.pi*x
+            Tid *= 2*np.pi*np.pi*x
+            fnuVis[i] = nu[i]*trapz(Vis, x)
+            fnuIrr[i] = nu[i]*trapz(Irr, x)
+            fnuTid[i] = nu[i]*trapz(Tid, x)
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
             fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
@@ -643,7 +677,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     
     fnuT = fnuD + fnuS + fnuSh
     lamb = c/nu*1.0e4 # In microns
-    return lamb, fnuD, fnuSh, fnuS, fnuT
+    return lamb, fnuVis, fnuIrr, fnuTid, fnuD, fnuSh, fnuS, fnuT
 
 _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
