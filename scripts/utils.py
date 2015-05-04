@@ -508,17 +508,18 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
-def getTeff(circ, tau=None, tauMin=0.0001):
+def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     """
     Return an array with the effective temperature as defined
     in the paper
     """
     if tau is None:
-        kappa = getKappa(circ)
-        tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()*kappa)
-    Sigma = circ.dimensionalSigma()
-    T = circ.T.value
-    r = circ.r*a*circ.gamma
+        kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
+        tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
+    Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]
+    rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
+    T = circ.T[:-(circ.ncell - rout -1)].value
+    r = circ.r[:-(circ.ncell - rout - 1)]*a*circ.gamma
     Ftid = thm.ftid(r, Sigma, circ.q, circ.fudge) 
     Fnu = thm.fv(r, T, Sigma)
     Firr = sigma*thm.Tirr(r, circ.q)**4
@@ -610,9 +611,9 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             tauextrap.fill(100)
             tau = np.maximum(tauMin, np.append(tauextrap, 0.5*Sigma*kappa))
         if Teff is None:
-            Teff = np.append(getTeffextrap(circ)[0], getTeff(circ, tau=tau)[0])
-        TeffNu = np.append(getTeffextrap(circ)[1], getTeff(circ,tau=tau)[1])
-        TeffIrr = np.append(getTeffextrap(circ)[2], getTeff(circ,tau=tau)[2])
+            Teff = np.append(getTeffextrap(circ)[0], getTeff(circ)[0])
+        TeffNu = np.append(getTeffextrap(circ)[1], getTeff(circ)[1])
+        TeffIrr = np.append(getTeffextrap(circ)[2], getTeff(circ)[2])
         if Tsh is None:
             Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
@@ -643,9 +644,9 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
         if Teff is None:
             Teff = getTeff(circ, tau=tau)[0]
-        TeffNu = getTeff(circ,tau=tau)[1]
-        TeffIrr = getTeff(circ,tau=tau)[2]
-        TeffTid = getTeff(circ,tau=tau)[3]
+        TeffNu = getTeff(circ)[1]
+        TeffIrr = getTeff(circ)[2]
+        TeffTid = getTeff(circ)[3]
         if Tsh is None:
             Tsh = np.power(L/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
