@@ -617,7 +617,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         TeffNu = np.append(getTeffextrap(circ)[1], getTeff(circ)[1])
         TeffIrr = np.append(getTeffextrap(circ)[2], getTeff(circ)[2])
         if Tsh is None:
-            Tsh = np.power(L*T/16/np.pi/sigma/(r)**2, 0.2)
+            Tsh = np.power(L*Ts[0]/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         for i in range(len(nu)):
             x = r
@@ -650,7 +650,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         TeffIrr = getTeff(circ)[2]
         TeffTid = getTeff(circ)[3]
         if Tsh is None:
-            Tsh = np.power(L*T/16/np.pi/sigma/(r)**2, 0.2)
+            Tsh = np.power(L*Ts[0]/16/np.pi/sigma/(r)**2, 0.2)
         Firr = sigma*thm.Tirr(r, circ.q)**4
         Teff[np.where(circ.r < circ.rF[0]*2)] = 0.0
         Tsh[np.where(circ.r < circ.rF[0]*2)] = 0.0
