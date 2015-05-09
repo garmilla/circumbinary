@@ -672,7 +672,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             fnuTid[i] = nu[i]*trapz(Tid, x)
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            fnuS[i] = 2*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     elif circ.q != 0.0:
         raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
