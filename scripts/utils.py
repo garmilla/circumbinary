@@ -528,7 +528,7 @@ def plotAngloss(circ):
         SigArr[i] = sum(Sigma*r*r*dr)
         TorqueArr[i] = sum(thm.lam(circ.r[:-1]*a*circ.gamma, circ.q, circ.fudge)*r*r*dr*Sigma)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigArr*5000*np.pi*10**7)
+    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigArr)
     
     axaspect.set_xlabel(r'T (yrs)')
     axaspect.set_ylabel(r'Binary Angular Momentum Loss ($\mathrm{cm}^2 \mathrm{s}^{-2})$')
