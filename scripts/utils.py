@@ -531,7 +531,7 @@ def plotAngloss(circ):
     axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigArr)
     
     axaspect.set_xlabel(r'T (yrs)')
-    axaspect.set_ylabel(r'Binary Mass-Averaged Torque ($\mathrm{cm}^2 \mathrm{s}^{-2})$')
+    axaspect.set_ylabel(r'Binary Mass-Averaged Torque ($\mathrm{cm}^2 \mathrm{s}^{-2}$)')
     
     return fig
     
