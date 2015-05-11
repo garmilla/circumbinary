@@ -508,7 +508,7 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
-def getAng(circ):
+def plotAngloss(circ):
     #plot angular momentum lost by torque over time
     fig = plt.figure()
     
@@ -528,7 +528,7 @@ def getAng(circ):
         SigArr[i] = sum(Sigma*r*r*dr)
         TorqueArr[i] = sum(thm.lam(circ.r[:-1]*a*circ.gamma, circ.q, circ.fudge)*r*r*dr*Sigma)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigmaArr*5000*np.pi*10**7)
+    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigArr*5000*np.pi*10**7)
     
     axaspect.set_xlabel(r'T (yrs)')
     axaspect.set_ylabel(r'Binary Angular Momentum Loss ($\mathrm{cm}^2 \mathrm{s}^-1)$')
