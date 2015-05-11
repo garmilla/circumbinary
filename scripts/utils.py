@@ -508,6 +508,33 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
+def getAng(circ):
+    #plot angular momentum lost by torque over time
+    fig = plt.figure()
+    
+    axaspect = plt.subplot(1, 1, 1)
+    
+    r2 = circ.r*a*circ.q
+    dr = np.zeros(149)
+    for i in range(149):
+        dr[i] = r2[i+1] - r2[i]
+    SigArr = np.zeros(1001) 
+    TorqueArr = np.zeros(1001)
+    
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        r = circ.r[:-1]*a*circ.gamma
+        Sigma = circ.dimensionalSigma()[:-1]
+        SigArr[i] = sum(Sigma*r*r*dr)
+        TorqueArr[i] = sum(thm.lam(circ.r[:-1]*a*circ.gamma, circ.q, circ.fudge)*r*r*dr*Sigma)
+    
+    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigmaArr*5000*np.pi*10**7)
+    
+    axaspect.set_xlabel(r'T (yrs)')
+    axaspect.set_ylabel(r'Binary Angular Momentum Loss ($\mathrm{cm}^2 \mathrm{s}^-1)$')
+    
+    return fig
+    
 def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     """
     Return an array with the effective temperature as defined
