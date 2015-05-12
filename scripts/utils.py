@@ -514,21 +514,21 @@ def plotAngloss(circ):
     
     axaspect = plt.subplot(1, 1, 1)
     
-    r2 = circ.r*a*circ.q
-    dr = np.zeros(149)
-    for i in range(149):
-        dr[i] = r2[i+1] - r2[i]
     SigArr = np.zeros(1001) 
     TorqueArr = np.zeros(1001)
+    Arr = np.zeros(1001)
     
     for i, t in enumerate(circ.times):
         circ.loadTime(t)
         r = circ.r[:-1]*a*circ.gamma
-        Sigma = circ.dimensionalSigma()[:-1]
-        SigArr[i] = sum(Sigma*r*r*dr)
-        TorqueArr[i] = sum(thm.lam(circ.r[:-1]*a*circ.gamma, circ.q, circ.fudge)*r*r*dr*Sigma)
+        Sigma = circ.dimensionalSigma()
+        TorqueArr[i] = sum(thm.lam(circ.r*a*circ.gamma, circ.q, circ.fudge)*Sigma*2*np.pi*circ.mesh.cellVolumes*\
+                    (a*circ.gamma)**2)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),TorqueArr/SigArr)
+    for i in range(len(TorqueArr*5000*np.pi*10**7)):
+            Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
+    
+    axaspect.loglog(circ.dimensionalTime(circ.times),Arr/OmegaIn*a**2*2*M)
     
     axaspect.set_xlabel(r'T (yrs)')
     axaspect.set_ylabel(r'Binary Mass-Averaged Torque ($\mathrm{cm}^2 \mathrm{s}^{-2}$)')
