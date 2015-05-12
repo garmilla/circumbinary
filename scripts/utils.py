@@ -528,7 +528,7 @@ def plotAngloss(circ):
     for i in range(len(TorqueArr*5000*np.pi*10**7)):
             Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),Arr/OmegaIn*a**2*2*M)
+    axaspect.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
     
     axaspect.set_xlabel(r'T (yrs)')
     axaspect.set_ylabel(r'Binary Mass-Averaged Torque ($\mathrm{cm}^2 \mathrm{s}^{-2}$)')
