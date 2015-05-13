@@ -519,7 +519,7 @@ def properKappa(circ):
     Kappa = np.zeros(circ.T.shape)
     Sigma = circ.dimensionalSigma()
     
-    for i in range(len(kappa)):
+    for i in range(len(Kappa)):
     
         j = np.where(Sigma[i] < Sigtable)[-1][0]
         idxs[i] = idxstable[-j - 1, i]
