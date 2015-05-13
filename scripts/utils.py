@@ -13,6 +13,10 @@ import convection as conv
 
 _colors=['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
+temptable = thm.buildTempTable(circ.r*a*circ.gamma, q=circ.q, f=circ.fudge, rmStripe=True, smoothT=True)
+idxstable = temptable[3]
+Sigtable = np.power(10, temptable[1])
+
 def plotTmap(circ, Sigres=2000):
     SigmaGrid = np.logspace(np.log10(circ.Sigmin), np.log10(circ.Sigmax), Sigres)
     SigmaGrid = np.flipud(SigmaGrid)
@@ -510,11 +514,7 @@ def getKappa(circ):
 
 
 def properKappa(circ):
-    
-    temptable = thm.buildTempTable(circ.r*a*circ.gamma, q=circ.q, f=circ.fudge, rmStripe=True, smoothT=True)
-    idxstable = temptable[3]
-    Sigtable = np.power(10, temptable[1])
-    temp = np.power(10, temptable[2])
+
     idxs = np.zeros(circ.T.shape)
     Kappa = np.zeros(circ.T.shape)
     Sigma = circ.dimensionalSigma()
