@@ -508,6 +508,25 @@ def getKappa(circ):
         solved[update] = True
     return kappa
 
+
+def properKappa(circ):
+    
+    temptable = thm.buildTempTable(circ.r*a*circ.gamma, q=circ.q, f=circ.fudge, rmStripe=True, smoothT=True)
+    idxstable = temptable[3]
+    Sigtable = np.power(10, temptable[1])
+    temp = np.power(10, temptable[2])
+    idxs = np.zeros(circ.T.shape)
+    Kappa = np.zeros(circ.T.shape)
+    Sigma = circ.dimensionalSigma()
+    
+    for i in range(len(kappa)):
+    
+        j = np.where(Sigma[i] < Sigtable)[-1][0]
+        idxs[i] = idxstable[-j - 1, i]
+        Kappa[i] = thm.op(circ.T.value[i], circ.r[i]*a*circ.gamma, Sigma[i], idxs[i])
+    
+    return Kappa        
+
 def plotAngloss(circ):
     #plot angular momentum lost by torque over time
     fig = plt.figure()
@@ -543,7 +562,7 @@ def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     
     rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
     if tau is None:
-        kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
+        kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
         tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
     Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]
     rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
@@ -635,7 +654,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
         Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
-            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
+            kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
             tauextrap = np.empty(nextrap)
             tauextrap.fill(100)
             tau = np.maximum(tauMin, np.append(tauextrap, 0.5*Sigma*kappa))
@@ -669,7 +688,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         r = circ.r[:-(circ.ncell - rout - 1)]*a*circ.gamma
         Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
-            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
+            kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
         if Teff is None:
             Teff = getTeff(circ)[0]
@@ -752,7 +771,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,1] = circ.r*a*circ.gamma/AU
             outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
             outputArr[:,3] = np.maximum(Tmin, circ.T.value)
-            kappa = getKappa(circ)
+            kappa = properKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
@@ -769,7 +788,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,1] = circ.r*a*circ.gamma/AU
             outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
             outputArr[:,3] = np.maximum(Tmin, circ.T.value)
-            kappa = getKappa(circ)
+            kappa = properKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
             np.savetxt('m{0}_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
