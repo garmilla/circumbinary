@@ -31,7 +31,7 @@ def fv(r, T, Sigma):
 
 def Tirr(r, q):
     if q == 0:
-        return (((eta/7.0)*0.5*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
+        return (((eta/7.0)*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
     else:
         return (((eta/7.0)*2*L/(4*np.pi*sigma))**2* k/(G*M*mu))**(1.0/7.0)*r**(-3.0/7.0)
 
