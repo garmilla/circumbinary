@@ -733,9 +733,9 @@ _cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzz12']
 
-_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs012',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs052',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs12']
+_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs014',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs054',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs14']
 
 _times = [5.0e3, 5.0e4, 5.0e5, 5.0e6]
 
