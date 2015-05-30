@@ -276,7 +276,7 @@ def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sig
 
     axT.set_ylabel("T (K)")
     axT.set_xlabel(r'$r/r_0$')
-    axdz.set_ylabel(r'$\Sigma\, \mathrm{g\, cm}^{-2}$')
+    axdz.set_ylabel(r'$\Sigma\, \left(\mathrm{g\, cm}^{-2}\right)$')
     
     axdz.set_xlim(xlim)
     axT.set_xlim(xlim)
