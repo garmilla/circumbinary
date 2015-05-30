@@ -223,7 +223,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axheat= plt.subplot(1,1,1)
 
 
-    axheat.set_ylabel("Heating Terms (erg/cm^2/s)")
+    axheat.set_ylabel(r'Energy Flux \mathr{erg cm}^{-2}')
     axheat.set_xlabel("r/r0")
     
     
@@ -244,7 +244,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
             axheat.loglog(circ.r,thm.fv(r,T,Sigma),color='b')
             axheat.loglog(circ.r,sigma*thm.Tirr(r, circ.q)**4,color='g')
         else:
-            axheat.semilogx(circ.r,sigma*thm.Tirr(r, circ.q)**4,color ='r')
+            axheat.semilogx(circ.r,sigma*thm.ftid(r, circ.q)**4,color ='r')
             axheat.semilogx(circ.r,thm.fv(r,T,Sigma),color='b')
             axheat.semilogx(circ.r,sigma*thm.Tirr(r, circ.q)**4,color='g')
 
@@ -276,7 +276,7 @@ def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sig
 
     axT.set_ylabel("T (K)")
     axT.set_xlabel(r'$r/r_0$')
-    axdz.set_ylabel(r'$\Sigma\, \left(\mathrm{g\, cm}^{-2}\right)$')
+    axdz.set_ylabel(r'$\Sigma\, (\mathrm{g\, cm}^{-2})$')
     
     axdz.set_xlim(xlim)
     axT.set_xlim(xlim)
