@@ -223,7 +223,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     axheat= plt.subplot(1,1,1)
 
 
-    axheat.set_ylabel(r'$ \mathrm{Energy\, Flux}\, \mathrm{erg\,cm}^{-2}$')
+    axheat.set_ylabel(r'$ \mathrm{Energy\, Flux}\, (\mathrm{erg\,cm}^{-2})$')
     axheat.set_xlabel(r'$r/r_0$')
     
     
