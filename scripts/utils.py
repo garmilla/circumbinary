@@ -549,7 +549,7 @@ def plotAngloss(circ):
     
     axaspect.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
     
-    axaspect.set_xlabel(r'T (yrs)')
+    axaspect.set_xlabel(r't (yrs)')
     axaspect.set_ylabel(r'Fraction of Binary Angular Momentum Lost')
     
     return fig
