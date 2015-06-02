@@ -455,6 +455,8 @@ if __name__ == '__main__':
                         help='Maximum suface density allowed.')
     parser.add_argument('--M', default=1.9891e+33, type=float,
                         help='The mass of the central star(s)')
+    parser.add_argument('--gamma', default=100, type=float,
+                        help='constant (multiplied by 0.2 AU) that determines location of disk relative to star')
     parser.add_argument('--smoothing', default=0.0, type=float,
                         help='Smoothing parameter to pass to RectBivariateSpline.')
     parser.add_argument('--ncell', default=300, type=int,
