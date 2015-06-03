@@ -553,6 +553,30 @@ def plotAngloss(circ):
     
     return fig
     
+def plotmassloss(circ):
+    #plot angular momentum lost by torque over time
+    fig = plt.figure()
+    
+    axaspect = plt.subplot(1, 1, 1)
+    
+    SigArr = np.zeros(1001) 
+    TorqueArr = np.zeros(1001)
+    Arr = np.zeros(1001)
+    
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        r = circ.r[:-1]*a*circ.gamma
+        Sigma = circ.dimensionalSigma()
+        accret[i] = sum(Sigma*2*np.pi*circ.mesh.cellVolumes*(a*circ.gamma)**2)
+    
+    axaspect.loglog(circ.dimensionalTime(circ.times),accret/M)
+    
+    axaspect.set_xlabel(r't (yrs)')
+    axaspect.set_ylabel(r'Mass Accreted in $M_{\odot}$')
+    
+    return fig
+    
+    
 def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     """
     Return an array with the effective temperature as defined
