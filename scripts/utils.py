@@ -7,7 +7,7 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 
 from constants import *
-import thermopy as thm
+import thermopy as thmac
 
 import convection as conv
 
@@ -559,9 +559,7 @@ def plotmassloss(circ):
     
     axaspect = plt.subplot(1, 1, 1)
     
-    SigArr = np.zeros(1001) 
-    TorqueArr = np.zeros(1001)
-    Arr = np.zeros(1001)
+    accret = np.zeros(1001)
     
     for i, t in enumerate(circ.times):
         circ.loadTime(t)
