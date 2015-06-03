@@ -573,7 +573,7 @@ def plotmassloss(circ, logLog=True):
         axmass.semilogx(circ.dimensionalTime(circ.times),accret/M)
         
     axmass.set_xlabel(r't (yrs)')
-    axmass.set_ylabel(r'Mass Accreted in $M_{\odot}$')
+    axmass.set_ylabel(r'Disk Mass in $M_{\odot}$')
     
     return fig
     
