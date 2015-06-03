@@ -572,8 +572,8 @@ def plotmassloss(circ, logLog=True):
     else:
         axmass.semilogx(circ.dimensionalTime(circ.times),accret/M)
         
-    axaspect.set_xlabel(r't (yrs)')
-    axaspect.set_ylabel(r'Mass Accreted in $M_{\odot}$')
+    axmass.set_xlabel(r't (yrs)')
+    axmass.set_ylabel(r'Mass Accreted in $M_{\odot}$')
     
     return fig
     
