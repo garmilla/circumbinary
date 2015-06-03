@@ -8,7 +8,7 @@ from scipy.interpolate import RectBivariateSpline
 from fipy import CylindricalGrid1D, CellVariable, FaceVariable, TransientTerm, ExplicitUpwindConvectionTerm,\
                  ExponentialConvectionTerm, ImplicitSourceTerm, UpwindConvectionTerm
                  
-#consider adding Diffusion Term
+#consider adding Diffusion Term?
 from fipy.steppers import sweepMonotonic
 from fipy.boundaryConditions import FixedFlux
 
