@@ -7,7 +7,7 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 
 from constants import *
-import thermopy as thmac
+import thermopy as thm
 
 import convection as conv
 
