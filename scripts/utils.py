@@ -526,11 +526,11 @@ def properKappa(circ):
     
     return Kappa        
 
-def plotAngloss(circ):
+def plotAngloss(circ, logLog=True):
     #plot angular momentum lost by torque over time
     fig = plt.figure()
     
-    axaspect = plt.subplot(1, 1, 1)
+    axangloss = plt.subplot(1, 1, 1)
     
     SigArr = np.zeros(1001) 
     TorqueArr = np.zeros(1001)
@@ -546,10 +546,14 @@ def plotAngloss(circ):
     for i in range(len(TorqueArr*5000*np.pi*10**7)):
             Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
+    if logLog:
+        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
     
-    axaspect.set_xlabel(r't (yrs)')
-    axaspect.set_ylabel(r'Fraction of Binary Angular Momentum Lost')
+    else:
+        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
+    
+    axangloss.set_xlabel(r't (yrs)')
+    axangloss.set_ylabel(r'Fraction of Binary Angular Momentum Lost')
     
     return fig
     
