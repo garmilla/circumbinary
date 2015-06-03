@@ -553,11 +553,11 @@ def plotAngloss(circ):
     
     return fig
     
-def plotmassloss(circ):
+def plotmassloss(circ, logLog=True):
     #plot angular momentum lost by torque over time
     fig = plt.figure()
     
-    axaspect = plt.subplot(1, 1, 1)
+    axmass = plt.subplot(1, 1, 1)
     
     accret = np.zeros(1001)
     
@@ -567,8 +567,11 @@ def plotmassloss(circ):
         Sigma = circ.dimensionalSigma()
         accret[i] = sum(Sigma*2*np.pi*circ.mesh.cellVolumes*(a*circ.gamma)**2)
     
-    axaspect.loglog(circ.dimensionalTime(circ.times),accret/M)
-    
+    if logLog:
+        axmass.loglog(circ.dimensionalTime(circ.times),accret/M)
+    else:
+        axmass.semilogx(circ.dimensionalTime(circ.times),accret/M)
+        
     axaspect.set_xlabel(r't (yrs)')
     axaspect.set_ylabel(r'Mass Accreted in $M_{\odot}$')
     
