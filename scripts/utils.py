@@ -222,15 +222,11 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     
     axheat= plt.subplot(1,1,1)
 
-
     axheat.set_ylabel(r'$ \mathrm{Energy\, Flux}\, (\mathrm{erg\,cm}^{-2})$')
     axheat.set_xlabel(r'$r/r_0$')
     
-    
     axheat.set_xlim(xlim)
-    
     axheat.set_ylim(1.0e-0, 1.0e8)
-    
     
     for i, t in enumerate(times):
         circ.loadTime(t)
@@ -888,7 +884,36 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         outputArr[:,0] = Times
         outputArr[:,1] = iceline
         np.savetxt('m{0}_iceline_circumstellar.dat'.format(circ.mDisk), outputArr)
-
+    
+    #generate files to plot relative heating contributions
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 2))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            T = circ.T.value
+            r = circ.r*circ.gamma*a
+            outputArr[:,0] = circ.r*a*circ.gamma/AU
+            outputArr[:,1] = thm.fv(r,T,Sigma)
+            outputArr[:,2] = sigma*thm.Tirr(r, circ.q)**4
+            np.savetxt('m{0}_tvi_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+     for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 3))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            T = circ.T.value
+            r = circ.r*circ.gamma*a
+            outputArr[:,0] = circ.r*a*circ.gamma/AU
+            outputArr[:,1] = thm.fv(r,T,Sigma)
+            outputArr[:,2] = sigma*thm.Tirr(r, circ.q)**4
+            outputArr[:,3] = thm.ftid(r,Sigma,circ.q,circ.fudge)
+            np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
     for disk in [cBinaries[1], cStellars[1]]:
