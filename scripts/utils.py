@@ -248,7 +248,7 @@ def plotTVI(circ, xlim=None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
 
 def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sigMin=0.0001):
     """
-    Plot iceline and deadzone
+    Plot deadzone
     """
     fig = plt.figure()
     
@@ -284,17 +284,6 @@ def plotdz(circ, xlim=None, Sigdz = None, times=None, nTimes=4, logLog=True, sig
         Sigma = np.maximum(sigMin, Sigma)
         r = circ.r*circ.gamma*a # Dimensional radius
         T = circ.T.value
-        kappa = np.zeros(T.shape)
-        idxtab = np.zeros(T.shape)
-        solved = np.zeros(T.shape, dtype=bool)
-        for idx in range(1, 13):
-            Tmin, Tmax = thm.getBracket(r, Sigma, idx)
-            good = np.logical_and(True, T > Tmin)
-            good = np.logical_and(good, T < Tmax)
-            update = np.logical_and(good, np.logical_not(solved))
-            kappa[update] = thm.op(T[update], r[update], Sigma[update], idx)
-            idxtab[update] = idx
-            solved[update] = True
 
         deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
         
@@ -809,7 +798,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,1] = circ.r*a*circ.gamma/AU
             outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
             outputArr[:,3] = np.maximum(Tmin, circ.T.value)
-            kappa = properKappa(circ)
+            kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
@@ -826,7 +815,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,1] = circ.r*a*circ.gamma/AU
             outputArr[:,2] = np.maximum(Sigmin, circ.dimensionalSigma())
             outputArr[:,3] = np.maximum(Tmin, circ.T.value)
-            kappa = properKappa(circ)
+            kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
             np.savetxt('m{0}_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
@@ -889,7 +878,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in cStellars:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 2))
+            outputArr = np.zeros((circ.ncell, 3))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -902,7 +891,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
      for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 3))
+            outputArr = np.zeros((circ.ncell, 4))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -913,7 +902,43 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,2] = sigma*thm.Tirr(r, circ.q)**4
             outputArr[:,3] = thm.ftid(r,Sigma,circ.q,circ.fudge)
             np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-            
+    
+    #generate files to plot deadzones
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 5))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            r = circ.r*circ.gamma*a # Dimensional radius
+            T = circ.T.value    
+            Sigdz = 35
+            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            outputArr[:,0] = r/AU
+            outputArr[:,1] = Sigma
+            outputArr[:,2] = T
+            outputArr[:,3] = r[deadzone[0]]/AU
+            outputArr[:,4] = r[deadzone[-1]]/AU
+            np.savetxt('m{0}_tvi_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+     for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 5))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            r = circ.r*circ.gamma*a # Dimensional radius
+            T = circ.T.value
+            Sigdz = 100
+            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            outputArr[:,0] = r/AU
+            outputArr[:,1] = Sigma
+            outputArr[:,2] = T
+            outputArr[:,3] = r[deadzone[0]]/AU
+            outputArr[:,4] = r[deadzone[-1]]/AU
+            np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+        
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
     for disk in [cBinaries[1], cStellars[1]]:
