@@ -842,9 +842,8 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         outputArr[:,0] = Times
         outputArr[:,1] = angloss
         # We also need to store the analytic fit
-        np.savetxt('m{0}angloss.dat'.format(circ.mDisk), outputArr)
+        np.savetxt('m{0}_angloss.dat'.format(circ.mDisk), outputArr)
         
-
     # Generate the files to plot rinfl as a function of time, we also only do this
     # for circumbinary disks.
     for disk in cBinaries:
@@ -920,7 +919,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,2] = T
             outputArr[:,3] = r[deadzone[0]]/AU
             outputArr[:,4] = r[deadzone[-1]]/AU
-            np.savetxt('m{0}_tvi_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
      for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
@@ -937,7 +936,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,2] = T
             outputArr[:,3] = r[deadzone[0]]/AU
             outputArr[:,4] = r[deadzone[-1]]/AU
-            np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
         
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
