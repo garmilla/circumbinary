@@ -477,6 +477,22 @@ def getrinfl(circ):
         idx = l.argmax()
         rinfl[i] = circ.r[idx]*a*circ.gamma/AU
     return times, rinfl
+    
+def getangloss(circ):
+    """
+    Returns two arrays, the first contains the times in years and the
+    second the value of rinfl for that snapshot.
+    """
+    times = circ.dimensionalTime(circ.times)
+    angloss = np.zeros(times.shape)
+    for i, t in enumerate(circ.times):
+        circ.loadTime(t)
+        r = circ.r[:-1]*a*circ.gamma
+        Sigma = circ.dimensionalSigma()
+        TorqueArr[i] = sum(thm.lam(circ.r*a*circ.gamma, circ.q, circ.fudge)*Sigma*2*np.pi*circ.mesh.cellVolumes*\
+                    (a*circ.gamma)**2)
+        Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
+    return times, Arr
 
 def getFJt(circ):
     """
@@ -542,10 +558,8 @@ def plotAngloss(circ, logLog=True):
         Sigma = circ.dimensionalSigma()
         TorqueArr[i] = sum(thm.lam(circ.r*a*circ.gamma, circ.q, circ.fudge)*Sigma*2*np.pi*circ.mesh.cellVolumes*\
                     (a*circ.gamma)**2)
-    
-    for i in range(len(TorqueArr*5000*np.pi*10**7)):
-            Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
-    
+        Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
+
     if logLog:
         axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
     
@@ -832,6 +846,19 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         # We also need to store the analytic fit
         outputArr[:,2] = 5.2e37*circ.mDisk/0.01*np.power(Times/3.0e6, -6.0/13)
         np.savetxt('m{0}_ftime.dat'.format(circ.mDisk), outputArr)
+        
+    # Generate the files to plot angloss as a function of time. Only do this for 
+    # circumbinary disks
+    
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        outputArr = np.zeros((len(circ.times), 2))
+        Times, angloss = getangloss(circ)
+        outputArr[:,0] = Times
+        outputArr[:,1] = angloss
+        # We also need to store the analytic fit
+        np.savetxt('m{0}angloss.dat'.format(circ.mDisk), outputArr)
+        
 
     # Generate the files to plot rinfl as a function of time, we also only do this
     # for circumbinary disks.
