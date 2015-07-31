@@ -591,7 +591,7 @@ def getTeff(circ, tau=None, Rmax = 270, tauMin=0.0001):
     
     rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
     if tau is None:
-        kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
+        kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
         tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
     Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]
     rout = np.where(circ.r*a*circ.gamma/AU < Rmax)[0][-1]
@@ -683,7 +683,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             circ.r[:-(circ.ncell - rout - 1)])*a*circ.gamma 
         Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
-            kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
+            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tauextrap = np.empty(nextrap)
             tauextrap.fill(100)
             tau = np.maximum(tauMin, np.append(tauextrap, 0.5*Sigma*kappa))
@@ -717,7 +717,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
         r = circ.r[:-(circ.ncell - rout - 1)]*a*circ.gamma
         Sigma = circ.dimensionalSigma()[:-(circ.ncell - rout -1)]
         if tau is None:
-            kappa = properKappa(circ)[:-(circ.ncell - rout - 1)]
+            kappa = getKappa(circ)[:-(circ.ncell - rout - 1)]
             tau = np.maximum(tauMin, 0.5*circ.dimensionalSigma()[:-(circ.ncell - rout - 1)]*kappa)
         if Teff is None:
             Teff = getTeff(circ)[0]
@@ -916,11 +916,13 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             T = circ.T.value    
             Sigdz = 35
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            dzint = np.zeros(circ.ncell)
+            dzext = np.zeros(circ.ncell)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
-            outputArr[:,3] = r[deadzone[0]]/AU
-            outputArr[:,4] = r[deadzone[-1]]/AU
+            outputArr[:,3] = dzint.fill(r[deadzone[0]]/AU)
+            outputArr[:,4] = dzext.fill(r[deadzone[-1]]/AU)
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     for disk in cBinaries:
         circ = conv.loadResults(disk)
@@ -933,11 +935,13 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             T = circ.T.value
             Sigdz = 100
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            dzint = np.zeros(circ.ncell)
+            dzext = np.zeros(circ.ncell)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
-            outputArr[:,3] = r[deadzone[0]]/AU
-            outputArr[:,4] = r[deadzone[-1]]/AU
+            outputArr[:,3] = dzint.fill(r[deadzone[0]]/AU)
+            outputArr[:,4] = dzext.fill(r[deadzone[-1]]/AU)
             np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
         
     # Generate the files to plot the SEDs, we only do this for the disks with mass
