@@ -469,7 +469,8 @@ def getangloss(circ):
     second the value of rinfl for that snapshot.
     """
     times = circ.dimensionalTime(circ.times)
-    angloss = np.zeros(times.shape)SigArr = np.zeros(1001) 
+    angloss = np.zeros(times.shape)
+    
     TorqueArr = np.zeros(len(times))
     Arr = np.zeros(len(times))
     for i, t in enumerate(circ.times):
