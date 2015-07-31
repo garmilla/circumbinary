@@ -469,7 +469,9 @@ def getangloss(circ):
     second the value of rinfl for that snapshot.
     """
     times = circ.dimensionalTime(circ.times)
-    angloss = np.zeros(times.shape)
+    angloss = np.zeros(times.shape)SigArr = np.zeros(1001) 
+    TorqueArr = np.zeros(len(times))
+    Arr = np.zeros(len(times))
     for i, t in enumerate(circ.times):
         circ.loadTime(t)
         r = circ.r[:-1]*a*circ.gamma
@@ -533,7 +535,6 @@ def plotAngloss(circ, logLog=True):
     
     axangloss = plt.subplot(1, 1, 1)
     
-    SigArr = np.zeros(1001) 
     TorqueArr = np.zeros(1001)
     Arr = np.zeros(1001)
     
