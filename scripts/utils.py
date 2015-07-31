@@ -887,7 +887,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,1] = thm.fv(r,T,Sigma)
             outputArr[:,2] = sigma*thm.Tirr(r, circ.q)**4
             np.savetxt('m{0}_tvi_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-     for disk in cBinaries:
+    for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeros((circ.ncell, 4))
@@ -920,7 +920,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,3] = r[deadzone[0]]/AU
             outputArr[:,4] = r[deadzone[-1]]/AU
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-     for disk in cBinaries:
+    for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeros((circ.ncell, 5))
