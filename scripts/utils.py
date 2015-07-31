@@ -758,13 +758,13 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
     lamb = c/nu*1.0e4 # In microns
     return lamb, fnuNu, fnuIrr, fnuTid, fnuD, fnuSh, fnuS, fnuT
 
-_cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz012',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzz052',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzz12']
+_cBinaries = ['/u/dvartany/circumaster/circumbinary/scripts/outputzz01f',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz05f',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzz1f']
 
-_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs014',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs054',
-              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs14']
+_cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs01f',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs05f',
+              '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs1f']
 
 _times = [5.0e3, 5.0e4, 5.0e5, 5.0e6]
 
