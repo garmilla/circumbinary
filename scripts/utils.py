@@ -918,11 +918,13 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
             dzint = np.zeros(circ.ncell)
             dzext = np.zeros(circ.ncell)
+            dzint.fill(r[deadzone[0]]/AU)
+            dzext.fill(r[deadzone[-1]]/AU)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
-            outputArr[:,3] = dzint.fill(r[deadzone[0]]/AU)
-            outputArr[:,4] = dzext.fill(r[deadzone[-1]]/AU)
+            outputArr[:,3] = dzint
+            outputArr[:,4] = dzext
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     for disk in cBinaries:
         circ = conv.loadResults(disk)
@@ -933,15 +935,17 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             Sigma = circ.dimensionalSigma()
             r = circ.r*circ.gamma*a # Dimensional radius
             T = circ.T.value
-            Sigdz = 100
+            Sigdz = 80
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
             dzint = np.zeros(circ.ncell)
             dzext = np.zeros(circ.ncell)
+            dzint.fill(r[deadzone[0]]/AU)
+            dzext.fill(r[deadzone[-1]]/AU)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
-            outputArr[:,3] = dzint.fill(r[deadzone[0]]/AU)
-            outputArr[:,4] = dzext.fill(r[deadzone[-1]]/AU)
+            outputArr[:,3] = dzint
+            outputArr[:,4] = dzext
             np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
         
     # Generate the files to plot the SEDs, we only do this for the disks with mass
