@@ -904,50 +904,6 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,3] = thm.ftid(r,Sigma,circ.q,circ.fudge)
             np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     
-    #generate files to plot deadzones
-    for disk in cStellars:
-        circ = conv.loadResults(disk)
-        for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 5))
-            t = circ.dimensionlessTime(time)
-            circ.loadTime(t)
-            Sigma = circ.dimensionalSigma()
-            r = circ.r*circ.gamma*a # Dimensional radius
-            T = circ.T.value    
-            Sigdz = 35
-            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
-            dzint = np.zeros(circ.ncell)
-            dzext = np.zeros(circ.ncell)
-            dzint.fill(r[deadzone[0]]/AU)
-            dzext.fill(r[deadzone[-1]]/AU)
-            outputArr[:,0] = r/AU
-            outputArr[:,1] = Sigma
-            outputArr[:,2] = T
-            outputArr[:,3] = dzint
-            outputArr[:,4] = dzext
-            np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-    for disk in cBinaries:
-        circ = conv.loadResults(disk)
-        for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 5))
-            t = circ.dimensionlessTime(time)
-            circ.loadTime(t)
-            Sigma = circ.dimensionalSigma()
-            r = circ.r*circ.gamma*a # Dimensional radius
-            T = circ.T.value
-            Sigdz = 80
-            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
-            dzint = np.zeros(circ.ncell)
-            dzext = np.zeros(circ.ncell)
-            dzint.fill(r[deadzone[0]]/AU)
-            dzext.fill(r[deadzone[-1]]/AU)
-            outputArr[:,0] = r/AU
-            outputArr[:,1] = Sigma
-            outputArr[:,2] = T
-            outputArr[:,3] = dzint
-            outputArr[:,4] = dzext
-            np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-        
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
     for disk in [cBinaries[1], cStellars[1]]:
@@ -969,6 +925,50 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
                 np.savetxt('m{0}_spectrum_{1}.dat'.format(circ.mDisk, i+1), outputArr)
             elif circ.q == 0.0:
                 np.savetxt('m{0}_spectrum_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+                
+    #generate files to plot deadzones
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 5))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            r = circ.r*circ.gamma*a # Dimensional radius
+            T = circ.T.value    
+            Sigdz = 20
+            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            dzint = np.zeros(circ.ncell)
+            dzext = np.zeros(circ.ncell)
+            dzint.fill(r[deadzone[0]]/AU)
+            dzext.fill(r[deadzone[-1]]/AU)
+            outputArr[:,0] = r/AU
+            outputArr[:,1] = Sigma
+            outputArr[:,2] = T
+            outputArr[:,3] = dzint
+            outputArr[:,4] = dzext
+            np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+    for disk in cBinaries:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeros((circ.ncell, 5))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            r = circ.r*circ.gamma*a # Dimensional radius
+            T = circ.T.value
+            Sigdz = 40
+            deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            dzint = np.zeros(circ.ncell)
+            dzext = np.zeros(circ.ncell)
+            dzint.fill(r[deadzone[0]]/AU)
+            dzext.fill(r[deadzone[-1]]/AU)
+            outputArr[:,0] = r/AU
+            outputArr[:,1] = Sigma
+            outputArr[:,2] = T
+            outputArr[:,3] = dzint
+            outputArr[:,4] = dzext
+            np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
 if __name__ == '__main__':
     genSMInputs()
