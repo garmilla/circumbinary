@@ -5,6 +5,7 @@ import numpy as np
 from scipy.integrate import trapz
 import scipy.optimize
 import matplotlib.pyplot as plt
+from scipy.ndimage.filters import gaussian_filter
 
 from constants import *
 import thermopy as thm
@@ -853,7 +854,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         outputArr = np.zeros((len(circ.times), 3))
         Times, rinfl = getrinfl(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = rinfl
+        outputArr[:,1] = gaussian_filter(rinfl,1)
         # We also need to store the analytic fit
         outputArr[:,2] = 380.0*np.power(Times/3.0e6, 14.0/13)
         np.savetxt('m{0}_rinfl.dat'.format(circ.mDisk), outputArr)
