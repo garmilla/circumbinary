@@ -906,8 +906,8 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     
     # Generate files to plot aspect ratio
-    for disk in [cStellars, cbinaries]:
-        circ = conv.loadResults(disk):
+    for disk in [cStellars, cBinaries]:
+        circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeroes((circ.ncell,2))
             t = circ.dimensionlessTime(time)
