@@ -906,7 +906,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     
     # Generate files to plot aspect ratio
-    for disk in [cStellars, cBinaries]:
+    for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeroes((circ.ncell,2))
@@ -915,10 +915,17 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             Sigma = circ.dimensionalSigma()
             outputArr[:,0] = circ.r*circ.gamma*a/AU
             outputArr[:,1] = (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5
-            if circ.q == 1.0:
-                np.savetxt('m{0}_aspectratio_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-            elif circ.q == 0.0:
-                np.savetxt('m{0}_aspectratio_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            np.savetxt('m{0}_aspectratio_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+    for disk in cStellars:
+        circ = conv.loadResults(disk)
+        for i, time in enumerate(times):
+            outputArr = np.zeroes((circ.ncell,2))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            outputArr[:,0] = circ.r*circ.gamma*a/AU
+            outputArr[:,1] = (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5
+            np.savetxt('m{0}_aspectratio_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
             
             
     # Generate the files to plot the SEDs, we only do this for the disks with mass
