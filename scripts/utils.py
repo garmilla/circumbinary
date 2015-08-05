@@ -909,7 +909,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeroes((circ.ncell,2))
+            outputArr = np.zeros((circ.ncell,2))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -919,7 +919,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in cStellars:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeroes((circ.ncell,2))
+            outputArr = np.zeros((circ.ncell,2))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
