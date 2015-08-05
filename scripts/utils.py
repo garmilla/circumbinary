@@ -843,7 +843,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         outputArr = np.zeros((len(circ.times), 2))
         Times, angloss = getangloss(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = angloss
+        outputArr[:,1] = angloss/(OmegaIn*a**2*2*M)
         # We also need to store the analytic fit
         np.savetxt('m{0}_angloss.dat'.format(circ.mDisk), outputArr)
         
@@ -854,7 +854,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         outputArr = np.zeros((len(circ.times), 3))
         Times, rinfl = getrinfl(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = gaussian_filter(rinfl,1)
+        outputArr[:,1] = gaussian_filter(rinfl,15)
         # We also need to store the analytic fit
         outputArr[:,2] = 380.0*np.power(Times/3.0e6, 14.0/13)
         np.savetxt('m{0}_rinfl.dat'.format(circ.mDisk), outputArr)
@@ -905,6 +905,22 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,3] = thm.ftid(r,Sigma,circ.q,circ.fudge)
             np.savetxt('m{0}_tvi_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     
+    # Generate files to plot aspect ratio
+    for disk in [cStellars, cbinaries]:
+        circ = conv.loadResults(disk):
+        for i, time in enumerate(times):
+            outputArr = np.zeroes((circ.ncell,2))
+            t = circ.dimensionlessTime(time)
+            circ.loadTime(t)
+            Sigma = circ.dimensionalSigma()
+            outputArr[:,0] = circ.r*circ.gamma*a/AU
+            outputArr[:,1] = (k*circ.T.value*circ.r*a*circ.gamma/G/M/mu)**0.5
+            if circ.q == 1.0:
+                np.savetxt('m{0}_aspectratio_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            elif circ.q == 0.0:
+                np.savetxt('m{0}_aspectratio_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
+            
+            
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
     for disk in [cBinaries[1], cStellars[1]]:
