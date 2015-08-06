@@ -954,7 +954,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
     for disk in cStellars:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 5))
+            outputArr = np.zeros((circ.ncell, 6))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -971,11 +971,12 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,2] = T
             outputArr[:,3] = dzint
             outputArr[:,4] = dzext
+            outputArr[:,5] = Sigdz 
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 5))
+            outputArr = np.zeros((circ.ncell, 6))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -992,6 +993,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,2] = T
             outputArr[:,3] = dzint
             outputArr[:,4] = dzext
+            outputArr[:,5] = Sigdz
             np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
 if __name__ == '__main__':
