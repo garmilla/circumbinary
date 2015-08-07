@@ -972,9 +972,9 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,3] = dzint
             outputArr[:,4] = dzext
             outputArr[:,5] = Sigma[deadzone[0]]
-            outputArr[:,6] = Sigma[deadzone[1]] 
+            outputArr[:,6] = Sigma[deadzone[-1]] 
             outputArr[:,7] = T[deadzone[0]]
-            outputArr[:,8] = T[deadzone[1]]
+            outputArr[:,8] = T[deadzone[-1]]
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
     for disk in cBinaries:
         circ = conv.loadResults(disk)
@@ -997,9 +997,9 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             outputArr[:,3] = dzint
             outputArr[:,4] = dzext
             outputArr[:,5] = Sigma[deadzone[0]]
-            outputArr[:,6] = Sigma[deadzone[1]]
+            outputArr[:,6] = Sigma[deadzone[-1]]
             outputArr[:,7] = T[deadzone[0]]
-            outputArr[:,8] = T[deadzone[1]]
+            outputArr[:,8] = T[deadzone[-1]]
             np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
 if __name__ == '__main__':
