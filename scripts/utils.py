@@ -710,7 +710,7 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             fnuTid[i] = nu[i]*0
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            fnuS[i] = 2*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
     
     elif circ.q == 1.0:
     # We don't include the gap for circumbinary disks
