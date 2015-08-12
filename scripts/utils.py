@@ -767,9 +767,11 @@ _cStellars = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs01f',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs05f',
               '/u/dvartany/circumaster/circumbinary/scripts/outputzzcs1f']
 
+_cStellar2Irr = ['/u/dvartany/circumaster/circumbinary/scripts/outputzzcs05f2']
+
 _times = [5.0e3, 5.0e4, 5.0e5, 5.0e6]
 
-def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.0,
+def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, Sigmin=0.01, Tmin=1.0,
                 tauMin=0.01, FJMin=1.0e35, nLambda=1000):
     """
     Generate the files that supermongo takes as inputs to generate the paper's plots
@@ -786,6 +788,8 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
         cBinaries = _cBinaries
     if cStellars is None:
         cStellars = _cStellars
+    if cStellar2Irr is None:
+        cStellar2Irr = _cStellar2Irr
     if times is None:
         times = _times
 
@@ -930,7 +934,7 @@ def genSMInputs(cBinaries=None, cStellars=None, times=None, Sigmin=0.01, Tmin=1.
             
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
-    for disk in [cBinaries[1], cStellars[1]]:
+    for disk in [cBinaries[1],cStellar2Irr]:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeros((nLambda, 8))
