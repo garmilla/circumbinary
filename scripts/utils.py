@@ -870,14 +870,14 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         outputArr = np.zeros((len(circ.times), 2))
         Times, iceline = geticeline(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = iceline
+        outputArr[:,1] = gaussian_filter(iceline, 15)
         np.savetxt('m{0}_iceline.dat'.format(circ.mDisk), outputArr)
     for disk in cStellars:
         circ = conv.loadResults(disk)
         outputArr = np.zeros((len(circ.times), 2))
         Times, iceline = geticeline(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = iceline
+        outputArr[:,1] = gaussian_filter(iceline, 15)
         np.savetxt('m{0}_iceline_circumstellar.dat'.format(circ.mDisk), outputArr)
     
     #generate files to plot relative heating contributions
