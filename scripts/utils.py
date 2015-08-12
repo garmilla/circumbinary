@@ -934,7 +934,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             
     # Generate the files to plot the SEDs, we only do this for the disks with mass
     # 0.05 M_c
-    for disk in [cBinaries[1],cStellar2Irr]:
+    for disk in [cBinaries[1],cStellar2Irr[0]]:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeros((nLambda, 8))
