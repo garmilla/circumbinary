@@ -549,10 +549,10 @@ def plotAngloss(circ, logLog=True):
         Arr[i] = sum(TorqueArr[0:i+1]*5000*np.pi*10**7)
 
     if logLog:
-        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
+        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(np.sqrt(G*M**3*a)*0.25))
     
     else:
-        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(OmegaIn*a**2*2*M))
+        axangloss.loglog(circ.dimensionalTime(circ.times),Arr/(np.sqrt(G*M**3*a)*0.25))
     
     axangloss.set_xlabel(r't (yrs)')
     axangloss.set_ylabel(r'Fraction of Binary Angular Momentum Lost')
@@ -847,7 +847,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         outputArr = np.zeros((len(circ.times), 2))
         Times, angloss = getangloss(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = angloss/(OmegaIn*a**2*2*M)
+        outputArr[:,1] = angloss/(np.sqrt(G*M**3*a)*0.25)
         # We also need to store the analytic fit
         np.savetxt('m{0}_angloss.dat'.format(circ.mDisk), outputArr)
         
