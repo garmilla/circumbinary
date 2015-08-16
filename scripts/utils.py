@@ -980,7 +980,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             outputArr[:,7] = T[deadzone[0]]
             outputArr[:,8] = T[deadzone[-1]]
             np.savetxt('m{0}_dz_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
-    for disk in cBinaries:
+    for disk in [cBinaries[1]]:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
             outputArr = np.zeros((circ.ncell, 12))
