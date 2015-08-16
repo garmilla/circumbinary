@@ -991,7 +991,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             T = circ.T.value
             Sigdz = 40
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
-            deadzone2 = np.where((Sigma > 200) & (T < 800))[0]
+            deadzone2 = np.where((Sigma > 100) & (T < 800))[0]
             dzint = np.zeros(circ.ncell)
             dzext = np.zeros(circ.ncell)
             dzext2 = np.zeros(circ.ncell)
