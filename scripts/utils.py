@@ -983,7 +983,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 9))
+            outputArr = np.zeros((circ.ncell, 12))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             Sigma = circ.dimensionalSigma()
@@ -991,19 +991,25 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             T = circ.T.value
             Sigdz = 40
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
+            deadzone = np.where((Sigma > 200) & (T < 800))[0]
             dzint = np.zeros(circ.ncell)
             dzext = np.zeros(circ.ncell)
+            dzext2 = np.zeros(circ.ncell)
             dzint.fill(r[deadzone[0]]/AU)
             dzext.fill(r[deadzone[-1]]/AU)
+            dzext2.fill(r[deadzone2[-1]/AU)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
             outputArr[:,3] = dzint
             outputArr[:,4] = dzext
-            outputArr[:,5] = Sigma[deadzone[0]]
-            outputArr[:,6] = Sigma[deadzone[-1]]
-            outputArr[:,7] = T[deadzone[0]]
-            outputArr[:,8] = T[deadzone[-1]]
+            outputArr[:,5] = dzext2
+            outputArr[:,6] = Sigma[deadzone[0]]
+            outputArr[:,7] = Sigma[deadzone[-1]]
+            outputArr[:,8] = T[deadzone[0]]
+            outputArr[:,9] = T[deadzone[-1]]
+            outputArr[:,10] = Sigma[deadzone2[-1]]
+            outputArr[:,11] = T[deadzone2[-1]]
             np.savetxt('m{0}_dz_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
 if __name__ == '__main__':
