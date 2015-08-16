@@ -997,7 +997,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             dzext2 = np.zeros(circ.ncell)
             dzint.fill(r[deadzone[0]]/AU)
             dzext.fill(r[deadzone[-1]]/AU)
-            dzext2.fill(r[deadzone2[-1]/AU)
+            dzext2.fill(r[deadzone2[-1]]/AU)
             outputArr[:,0] = r/AU
             outputArr[:,1] = Sigma
             outputArr[:,2] = T
