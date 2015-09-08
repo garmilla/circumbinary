@@ -1,5 +1,5 @@
 #This code was copied from the astroML package
-#https://github.com/astroML/astroML/blob/master/astroML/decorators.py
+#https://github.com/astroML/astroML/blob/master/astroML/decorators.pya
 import pickle
 import numpy as np
 from scipy.integrate import trapz
@@ -844,10 +844,11 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     
     for disk in cBinaries:
         circ = conv.loadResults(disk)
-        outputArr = np.zeros((len(circ.times), 2))
+        outputArr = np.zeros((len(circ.times), 3))
         Times, angloss = getangloss(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = angloss/(np.sqrt(G*M**3*a)*0.25)
+        outputArr[:,1] = angloss
+        outputArr[:,2] = 1.2e52*circ.mDisk*100*(Times/3.0e6)**(7./13)
         # We also need to store the analytic fit
         np.savetxt('m{0}_angloss.dat'.format(circ.mDisk), outputArr)
         
