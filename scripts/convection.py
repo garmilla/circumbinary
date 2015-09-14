@@ -320,7 +320,7 @@ class Circumbinary(object):
         if dt:
             self.dt = dt
         if emptyDt:
-            vr = self.vr.value[0]
+            vr = self.vr.value[0].copy()
             if self.q == 0.0:
                 vr[0] = -3.0/2*self.nu.faceValue.value[0]/self.rF[0]
             #vr[np.where(self.Sigma.value)] = self.delta
