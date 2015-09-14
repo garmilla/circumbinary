@@ -6,6 +6,7 @@ from scipy.integrate import trapz
 import scipy.optimize
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import gaussian_filter
+from scipy import interpolate
 
 from constants import *
 import thermopy as thm
