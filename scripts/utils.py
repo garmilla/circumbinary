@@ -970,7 +970,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             Sigma = circ.dimensionalSigma()
             r = circ.r*circ.gamma*a # Dimensional radius
             T = circ.T.value    
-            Sigdz = 20
+            Sigdz = 15
             deadzone = np.where((Sigma > Sigdz) & (T < 800))[0]
             dzint = np.zeros(circ.ncell)
             dzext = np.zeros(circ.ncell)
