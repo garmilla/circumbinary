@@ -799,7 +799,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 6))
+            outputArr = np.zeros((8))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             outputArr[:,0] = circ.r
@@ -809,6 +809,8 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
+            outputArr[:,6] = (circ.r*a)**(-11./7)
+            outputArr[:,7] = (circ.r*a)**(-3./7)*100
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
     # Generate the files to plot the Sigma, T, tau and FJ snapshots for
