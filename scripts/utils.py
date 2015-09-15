@@ -809,8 +809,8 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
-            outputArr[:,6] = (circ.r*a)**(-11./7)
-            outputArr[:,7] = (circ.r*a)**(-3./7)*100
+            outputArr[:,6] = (circ.r)**(-11./7)*2
+            outputArr[:,7] = (circ.r)**(-3./7)*100
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
     # Generate the files to plot the Sigma, T, tau and FJ snapshots for
