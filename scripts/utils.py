@@ -799,7 +799,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((8))
+            outputArr = np.zeros((circ.ncell,8))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             outputArr[:,0] = circ.r
