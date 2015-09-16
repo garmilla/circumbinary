@@ -811,6 +811,8 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
             outputArr[:,6] = (circ.r)**(-11./7)*2
             outputArr[:,7] = (circ.r)**(-3./7)*100
+            gap = np.where(circ.r*a*circ.gamma/AU < 0.4)
+            outputArr[:,3][gap] = 0.0
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
     # Generate the files to plot the Sigma, T, tau and FJ snapshots for
@@ -873,7 +875,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         circ = conv.loadResults(disk)
         outputArr = np.zeros((len(circ.times), 2))
         Times, iceline = geticeline(circ)
-        tck = interpolate.splrep(Times, iceline, s=25)
+        tck = interpolate.splrep(Times, iceline, s=35)
         ynew = interpolate.splev(Times, tck, der=0)
         outputArr[:,0] = Times
         outputArr[:,1] = ynew
@@ -882,7 +884,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         circ = conv.loadResults(disk)
         outputArr = np.zeros((len(circ.times), 2))
         Times, iceline = geticeline(circ)
-        tck = interpolate.splrep(Times, iceline, s=25)
+        tck = interpolate.splrep(Times, iceline, s=55)
         ynew = interpolate.splev(Times, tck, der=0)
         outputArr[:,0] = Times
         outputArr[:,1] = ynew
