@@ -839,7 +839,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         outputArr[:,0] = Times
         outputArr[:,1] = FJ
         # We also need to store the analytic fit
-        outputArr[:,2] = 5.2e37*circ.mDisk/0.01*np.power(Times/3.0e6, -6.0/13)
+        outputArr[:,2] = 1.34*10**38*circ.mDisk/0.01*np.power(Times/3.0e6, -6.0/13)*0.45
         np.savetxt('m{0}_ftime.dat'.format(circ.mDisk), outputArr)
         
     # Generate the files to plot angloss as a function of time. Only do this for 
@@ -862,9 +862,9 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         outputArr = np.zeros((len(circ.times), 3))
         Times, rinfl = getrinfl(circ)
         outputArr[:,0] = Times
-        outputArr[:,1] = gaussian_filter(rinfl,15)
+        outputArr[:,1] = gaussian_filter(rinfl,25)
         # We also need to store the analytic fit
-        outputArr[:,2] = 380.0*np.power(Times/3.0e6, 14.0/13)
+        outputArr[:,2] = 204.0*np.power(Times/3.0e6, 14.0/13)*1.5
         np.savetxt('m{0}_rinfl.dat'.format(circ.mDisk), outputArr)
        
     # Generate the files to plot the iceline as a function of time, we do this for both
