@@ -274,7 +274,7 @@ class Circumbinary(object):
                 self.vr = self.vrVisc
                 r32 = np.power(self.r, 1.5)
                 self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-                                                           - (self.LambdaCell*self.Sigma.old*r32).grad/self.r
+                                                           - (self.LambdaCell*self.Sigma.old*r32).grad[0]/self.r
             else:
                 self.vr = self.vrVisc + self.vrTid
                 self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
