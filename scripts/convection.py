@@ -113,7 +113,7 @@ def pickle_results(filename=None, verbose=True):
 class Circumbinary(object):
     def __init__(self, rmin=1.0e-2, rmax=1.0e4, ncell=300, dt=1.0e-6, delta=1.0e-100,
                  fudge=1.0e-3, q=1.0, gamma=100, mdisk=0.1, odir='output',
-                 bellLin=True, emptydt=0.001, **kargs):
+                 bellLin=True, emptydt=0.001, torqueAsSource=False, **kargs):
         self.rmax = rmax
         self.rmin = rmin
         self.ncell = ncell
@@ -143,7 +143,7 @@ class Circumbinary(object):
         self._genTorque()
         self._genT(bellLin=self.bellLin, tol = 0.0, **kargs)
         self._genVr()
-        self._buildEq()
+        self._buildEq(torqueAsSource=torqueAsSource)
 
     def _genGrid(self, gamma=100.0, inB=1.0):
         """Generate a logarithmically spaced grid"""
@@ -263,15 +263,21 @@ class Circumbinary(object):
         if self.q > 0.0:
             self.vrTid = self.Lambda*np.sqrt(self.rF)
 
-    def _buildEq(self):
+    def _buildEq(self, torqueAsSource=False):
         """
         Build the equation to solve, we can change this method to impelement other
         schemes, e.g. Crank-Nicholson.
         """
         # The current scheme is an implicit-upwind
         if self.q > 0.0:
-            self.vr = self.vrVisc + self.vrTid
-            self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
+            if torqueAsSource:
+                self.vr = self.vrVisc
+                r32 = np.power(self.r, 1.5)
+                self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
+                                                           - (self.LambdaCell*self.Sigma.old*r32).getDivergence()
+            else:
+                self.vr = self.vrVisc + self.vrTid
+                self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
         else:
             self.vr = self.vrVisc
             mask_coeff = (self.mesh.facesLeft * self.mesh.faceNormals).getDivergence()
@@ -489,5 +495,7 @@ if __name__ == '__main__':
                         help='Radius of the gaussian filter in the Sigma direction (in pixel units).')
     parser.add_argument('--sigmaR', default=2.0, type=float,
                         help='Radius of the gaussian filter in the radius direction (in pixel units).')
+    parser.add_argument('--torqueAsSource', action='store_true',
+                        help='If present, discretize the equation with the torque as a source.')
     kargs = vars(parser.parse_args())
     run(**kargs)
