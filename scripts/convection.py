@@ -272,9 +272,9 @@ class Circumbinary(object):
         if self.q > 0.0:
             if torqueAsSource:
                 self.vr = self.vrVisc
-                r32 = np.power(self.rF, 1.5)
+                r12 = np.sqrt(self.rF)
                 self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)\
-                                                           - (self.Lambda*self.Sigma.old.faceValue*r32).divergence
+                                                           - (self.Lambda*self.Sigma.old.faceValue*r12).divergence
             else:
                 self.vr = self.vrVisc + self.vrTid
                 self.eq = TransientTerm(var=self.Sigma) == - ExplicitUpwindConvectionTerm(coeff=self.vr, var=self.Sigma)
