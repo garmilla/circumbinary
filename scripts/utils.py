@@ -853,7 +853,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
         Times, angloss = getangloss(circ)
         outputArr[:,0] = Times
         outputArr[:,1] = angloss
-        outputArr[:,2] = 1.2e52*circ.mDisk*100*(Times/3.0e6)**(7./13)
+        outputArr[:,2] = 1.0e52*circ.mDisk*100*(Times/3.0e6)**(7./13)
         # We also need to store the analytic fit
         np.savetxt('m{0}_angloss.dat'.format(circ.mDisk), outputArr)
         
