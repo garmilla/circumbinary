@@ -799,7 +799,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     for disk in cBinaries:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell,8))
+            outputArr = np.zeros((circ.ncell,10))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             outputArr[:,0] = circ.r
@@ -809,8 +809,10 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
-            outputArr[:,6] = (circ.r)**(-11./7)*2
-            outputArr[:,7] = (circ.r)**(-3./7)*100
+            outputArr[:,6] = (circ.r)**(-11./7)
+            outputArr[:,7] = (circ.r)**(-11./7)*2
+            outputArr[:,8] = (circ.r)**(-11./7)*4
+            outputArr[:,9] = (circ.r)**(-3./7)*100
             gap = np.where(circ.r*a*circ.gamma/AU < 0.4)
             outputArr[:,3][gap] = 0.0
             np.savetxt('m{0}_{1}.dat'.format(circ.mDisk, i+1), outputArr)
