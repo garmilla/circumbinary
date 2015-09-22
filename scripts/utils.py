@@ -702,16 +702,16 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Irr = tau/(1.0 + tau)*getBnu(nu[i], TeffIrr)
             y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1,Tsh)**4*getBnu(nu[i], Tsh)
-            Vis *= 2*np.pi*np.pi*x
-            Irr *= 2*np.pi*np.pi*x
-            y *= 2*np.pi*np.pi*x
-            z *= 2*np.pi*np.pi*x
+            Vis *= 4*np.pi*np.pi*x
+            Irr *= 4*np.pi*np.pi*x
+            y *= 4*np.pi*np.pi*x
+            z *= 4*np.pi*np.pi*x
             fnuNu[i] = nu[i]*trapz(Vis, x)
             fnuIrr[i] = nu[i]*trapz(Irr, x)
             fnuTid[i] = nu[i]*0
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = 2*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            fnuS[i] = 8*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
     
     elif circ.q == 1.0:
     # We don't include the gap for circumbinary disks
@@ -739,17 +739,17 @@ def getSED(circ, extrap=False, RStar = 1, MStar = 1, TStar = 5780, LStar = 1, \
             Tid = tau/(1.0 + tau)*getBnu(nu[i], TeffTid)
             y = tau/(1.0 + tau)*getBnu(nu[i], Teff)
             z = (2.0+tau)/(1.0+tau)*Firr/sigma/np.maximum(1.0e1, Tsh)**4*getBnu(nu[i], Tsh)
-            y *= 2*np.pi*np.pi*x
-            z *= 2*np.pi*np.pi*x
-            Vis *= 2*np.pi*np.pi*x
-            Irr *= 2*np.pi*np.pi*x
-            Tid *= 2*np.pi*np.pi*x
+            y *= 4*np.pi*np.pi*x
+            z *= 4*np.pi*np.pi*x
+            Vis *= 4*np.pi*np.pi*x
+            Irr *= 4*np.pi*np.pi*x
+            Tid *= 4*np.pi*np.pi*x
             fnuNu[i] = nu[i]*trapz(Vis, x)
             fnuIrr[i] = nu[i]*trapz(Irr, x)
             fnuTid[i] = nu[i]*trapz(Tid, x)
             fnuD[i] = nu[i]*trapz(y, x)
             fnuSh[i] = nu[i]*trapz(z,x)
-            fnuS[i] = 2*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
+            fnuS[i] = 8*nu[i]*np.pi*getBnu(nu[i], Ts)*np.pi*Rs**2
         
     elif circ.q != 0.0:
         raise ValueError("I only compute SEDs for q=1 and q=0, you specified q={0}".format(circ.q))
