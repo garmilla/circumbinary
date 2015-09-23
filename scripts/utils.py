@@ -822,7 +822,7 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
     for disk in cStellars:
         circ = conv.loadResults(disk)
         for i, time in enumerate(times):
-            outputArr = np.zeros((circ.ncell, 6))
+            outputArr = np.zeros((circ.ncell, 8))
             t = circ.dimensionlessTime(time)
             circ.loadTime(t)
             outputArr[:,0] = circ.r
@@ -832,6 +832,8 @@ def genSMInputs(cBinaries=None, cStellars=None, cStellar2Irr=None, times=None, S
             kappa = getKappa(circ)
             outputArr[:,4] = np.maximum(tauMin, circ.dimensionalSigma()*kappa)
             outputArr[:,5] = np.maximum(FJMin, circ.dimensionalFJ())
+            outputArr[:,6] = (circ.r)**(-15./14)*0.5
+            outputArr[:,7] = (circ.r)**(-3./7)*100
             np.savetxt('m{0}_circumstellar_{1}.dat'.format(circ.mDisk, i+1), outputArr)
 
     # Generate the files to plot the value of FJ at the plateau as a function of
